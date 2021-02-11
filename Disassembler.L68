@@ -1,0 +1,56 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 2/11/2021 3:12:11 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00001000                             7      ORG    $1000
+00001000                             8  START:                  ; first instruction of program
+00001000  307C 102A                  9          MOVEA   #SRC, A0    ; This gets the start of the space
+00001004  327C 1032                 10          MOVEA   #DST, A1    ; This gets the start of the next space. ie (The end of the last space)
+00001008  347C 1032                 11          MOVEA   #DST, A2
+0000100C                            12  * Put program code here
+0000100C                            13  
+0000100C                            14      ADDRESS_LOOP:
+0000100C  B2C8                      15          CMP   A0, A1
+0000100E  6700 0008                 16          BEQ     DONE
+00001012  1018                      17          MOVE.B  (A0)+, D0
+00001014  14C0                      18          MOVE.B  D0, (A2)+
+00001016                            19          
+00001016  60F4                      20          BRA ADDRESS_LOOP
+00001018                            21          
+00001018                            22  
+00001018                            23  
+00001018                            24      DONE:
+00001018  43F9 00001032             25          LEA     DST, A1
+0000101E  103C 000D                 26          MOVE.B  #13, D0
+00001022  4E4F                      27          TRAP    #15
+00001024                            28          
+00001024  103C 0009                 29          MOVE.B  #9, D0
+00001028  4E4F                      30          TRAP    #15
+0000102A                            31  * Put variables and constants here
+0000102A                            32  
+0000102A                            33  SRC:
+0000102A= 54 68 69 73 20 69 ...     34      DC.B    'This is',0
+00001032                            35      
+00001032                            36  DST:
+00001032                            37      DS.B    64
+00001072                            38  
+00001072                            39      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+ADDRESS_LOOP        100C
+DONE                1018
+DST                 1032
+SRC                 102A
+START               1000
