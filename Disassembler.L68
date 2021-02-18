@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 2/11/2021 3:12:11 PM
+Created On: 2/18/2021 2:10:27 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -9,38 +9,147 @@ Created On: 2/11/2021 3:12:11 PM
 00000000                             5  * Description:
 00000000                             6  *-----------------------------------------------------------
 00001000                             7      ORG    $1000
-00001000                             8  START:                  ; first instruction of program
-00001000  307C 102A                  9          MOVEA   #SRC, A0    ; This gets the start of the space
-00001004  327C 1032                 10          MOVEA   #DST, A1    ; This gets the start of the next space. ie (The end of the last space)
-00001008  347C 1032                 11          MOVEA   #DST, A2
-0000100C                            12  * Put program code here
-0000100C                            13  
-0000100C                            14      ADDRESS_LOOP:
-0000100C  B2C8                      15          CMP   A0, A1
-0000100E  6700 0008                 16          BEQ     DONE
-00001012  1018                      17          MOVE.B  (A0)+, D0
-00001014  14C0                      18          MOVE.B  D0, (A2)+
-00001016                            19          
-00001016  60F4                      20          BRA ADDRESS_LOOP
-00001018                            21          
-00001018                            22  
-00001018                            23  
-00001018                            24      DONE:
-00001018  43F9 00001032             25          LEA     DST, A1
-0000101E  103C 000D                 26          MOVE.B  #13, D0
-00001022  4E4F                      27          TRAP    #15
-00001024                            28          
-00001024  103C 0009                 29          MOVE.B  #9, D0
-00001028  4E4F                      30          TRAP    #15
-0000102A                            31  * Put variables and constants here
-0000102A                            32  
-0000102A                            33  SRC:
-0000102A= 54 68 69 73 20 69 ...     34      DC.B    'This is',0
-00001032                            35      
-00001032                            36  DST:
-00001032                            37      DS.B    64
-00001072                            38  
-00001072                            39      END    START        ; last line of source
+00001000                             8      ; Testing MOVE.B
+00001000                             9      ; MOVE.B = 103C =  0001 0000 0011 1100
+00001000                            10      ; Byte Operation   00(01) 0000 0011 1100
+00001000                            11      ; Destination      0001 (0000 00)11 1100
+00001000                            12      ; Source           0001 0000 00(11 1100)
+00001000                            13      
+00001000                            14      
+00001000                            15      
+00001000                            16      
+00001000                            17      ; can determine OP code from first 4 bits
+00001000                            18      
+00001000                            19  START:                  ; first instruction of program
+00001000  43F9 00001068             20          LEA         START_MSG, A1
+00001006  103C 000E                 21          MOVE.B      #14, D0    
+0000100A                            22  *        TRAP        #15
+0000100A                            23          
+0000100A  43F9 0000109B             24          LEA         STA_ADDR, A1
+00001010  103C 0002                 25          MOVE.B      #2, D0
+00001014  4E4F                      26          TRAP        #15             ; D1 has the length of the address
+00001016                            27          
+00001016                            28          
+00001016                            29          ; LEA         END_MSG, A1
+00001016                            30          ; MOVE.B      #14, D0    
+00001016                            31          ; TRAP        #15
+00001016                            32          
+00001016                            33          ; LEA         END_ADDR, A1
+00001016                            34          ; MOVE.B      #2, D0
+00001016                            35          ; TRAP        #15
+00001016                            36          
+00001016                            37  
+00001016                            38  
+00001016                            39  
+00001016                            40  
+00001016                            41  CONVERT_TO_ASCII:
+00001016                            42  
+00001016  0C01 0000                 43          CMPI.B      #$0, D1     ; check if we have traversed the whole length
+0000101A                            44          ; BEQ         
+0000101A                            45      
+0000101A  1419                      46          MOVE.B      (A1)+, D2   ; Gives D2 the next Byte from A1
+0000101C                            47      
+0000101C  163C 0039                 48          MOVE.B      #$39, D3    ; Moves 39 into D3, Ascii Characters after 39 are not letters
+00001020  B403                      49          CMP.B       D3, D2
+00001022                            50  
+00001022  6F00 0006                 51          BLE         NUM_ASCII   ; data in D2 is less than 39, Most likely a number
+00001026  6000 000E                 52          BRA         LET_ASCII   ; If not a number, then it is an ASCII Letter
+0000102A                            53  
+0000102A                            54  
+0000102A                            55  NUM_ASCII:
+0000102A  163C 0030                 56          MOVE.B      #$30, D3
+0000102E  9403                      57          SUB.B       D3, D2      ; ASCII numbers start at 30. 30 = 0, 31 = 1, etc
+00001030  D802                      58          ADD.B       D2, D4      ; new ASCII number stored at D4
+00001032                            59          
+00001032  5301                      60          SUBI.B      #$1, D1
+00001034                            61          
+00001034  60E0                      62          BRA         CONVERT_TO_ASCII
+00001036                            63          
+00001036                            64          
+00001036                            65  LET_ASCII:
+00001036                            66  
+00001036  163C 0037                 67          MOVE.B      #$37, D3
+0000103A  9403                      68          SUB.B       D3, D2      ; Hex letters we care about are from A-F, we can use math do achieve this
+0000103C  D802                      69          ADD.B       D2, D4      ; 41 is used to represent A in Hex. Hexadecimal subtraction: 41 - 37 = A
+0000103E                            70                                  ; 46 is used to represent F in Hex. 46 - 37 = F
+0000103E                            71          
+0000103E  5301                      72          SUBI.B      #$1, D1
+00001040                            73          
+00001040  60D4                      74          BRA         CONVERT_TO_ASCII
+00001042                            75  
+00001042                            76  
+00001042                            77  
+00001042                            78  
+00001042                            79  
+00001042                            80          
+00001042                            81  
+00001042                            82  
+00001042                            83  
+00001042                            84  
+00001042                            85  
+00001042                            86  
+00001042                            87          
+00001042                            88  * Put program code here
+00001042                            89  
+00001042                            90  ADDRESS_LOOP:
+00001042  B4C8                      91          CMP   A0, A2
+00001044  6700 000C                 92          BEQ     DONE
+00001048  1218                      93          MOVE.B  (A0)+, D1
+0000104A  16C1                      94          MOVE.B  D1, (A3)+
+0000104C  16FC 0020                 95          MOVE.B  #' ',(A3)+
+00001050                            96          
+00001050                            97          ; LEA     D1, A1
+00001050                            98          
+00001050                            99          ; MOVE.B  #14, D0
+00001050                           100          ; TRAP    #15
+00001050                           101          
+00001050  60F0                     102          BRA ADDRESS_LOOP
+00001052                           103  
+00001052                           104  
+00001052                           105  DONE:
+00001052                           106  
+00001052                           107          
+00001052  103C 0009                108          MOVE.B  #9, D0
+00001056  4E4F                     109          TRAP    #15
+00001058                           110          
+00001058                           111          
+00001058                           112          
+00001058                           113  * Put variables and constants here
+00001058                           114          INCLUDE     'Disassembler_EA_Codes.x68'
+00001058                           115  
+00001058                           116  
+00001058                           117  
+00001058                           118  EACODE:
+00001058= 54 45 53 54 4C 4F ...    119          DC.B    'TESTLOC',0
+00001060                           120  
+00001060                           121  
+00001060                           122  
+00001060                           123  
+00001060                           124  
+00001060                           125  -------------------- end include --------------------
+00001060                           126          INCLUDE     'Disassembler_OP_Codes.x68'
+00001060                           127  
+00001060                           128  OPCODE:
+00001060= 54 45 53 54 4C 4F ...    129          DC.B    'TESTLOC',0
+00001068                           130  
+00001068                           131  
+00001068                           132  
+00001068                           133  
+00001068                           134  -------------------- end include --------------------
+00001068                           135  
+00001068                           136  
+00001068                           137  
+00001068                           138  
+00001068                           139  START_MSG:
+00001068= 45 6E 74 65 72 20 ...    140                  DC.B        'Enter a starting address:',0
+00001082                           141  END_MSG:
+00001082= 45 6E 74 65 72 20 ...    142                  DC.B        'Enter an ending address:',0
+0000109B                           143                  
+0000109B                           144  STA_ADDR        DS.B        40
+000010C3                           145  END_ADDR        DS.B        40
+000010EB                           146                  
+000010EB                           147                  
+000010EB                           148          END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -49,8 +158,15 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-ADDRESS_LOOP        100C
-DONE                1018
-DST                 1032
-SRC                 102A
+ADDRESS_LOOP        1042
+CONVERT_TO_ASCII    1016
+DONE                1052
+EACODE              1058
+END_ADDR            10C3
+END_MSG             1082
+LET_ASCII           1036
+NUM_ASCII           102A
+OPCODE              1060
 START               1000
+START_MSG           1068
+STA_ADDR            109B

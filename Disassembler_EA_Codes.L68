@@ -1,0 +1,33 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 2/18/2021 11:45:15 AM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00000000                             7  
+00000000                             8  * Put program code here
+00000000                             9  
+00000000  FFFF FFFF                 10      SIMHALT             ; halt simulator
+00000004                            11  
+00000004                            12  * Put variables and constants here
+00000004                            13  
+00000004                            14  
+00000004                            15  EACODE:
+00000004= 54 45 53 54 4C 4F ...     16          DC.B    'TESTLOC',0
+0000000C                            17  
+0000000C                            18  
+0000000C                            19  
+Line 20 WARNING: END directive missing, starting address not set
+
+No errors detected
+1 warning generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+EACODE              4

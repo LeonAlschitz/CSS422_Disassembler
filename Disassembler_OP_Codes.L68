@@ -1,0 +1,36 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 2/18/2021 11:46:33 AM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00000000                             7  
+00000000                             8  * Put program code here
+00000000                             9  
+00000000  FFFF FFFF                 10      SIMHALT             ; halt simulator
+00000004                            11  
+00000004                            12  * Put variables and constants here
+00000004                            13  
+00000004  4282                      14  JMP_TBL     CLR.L       D2
+00000006  3407                      15              MOVE.W      D7,D2       *Copies D7 contents to D2 for manipulation
+00000008  4281                      16              CLR.L       D1
+0000000A  123C 000C                 17              MOVE.B      #12,D1      *Moves 12 into D1
+0000000E  E26A                      18              LSR.W       D1,D2
+00000010                            19  
+00000010                            20  
+00000010                            21  
+00000010                            22  
+Line 23 WARNING: END directive missing, starting address not set
+
+No errors detected
+1 warning generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+JMP_TBL             4
