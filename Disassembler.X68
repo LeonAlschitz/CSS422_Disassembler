@@ -11,7 +11,7 @@
     ; Destination      0001 (0000 00)11 1100
     ; Source           0001 0000 00(11 1100)
     
-    
+    ; 1 byte is represented by 2 hex digits
     
     
     ; can determine OP code from first 4 bits
@@ -24,6 +24,9 @@ START:                  ; first instruction of program
         LEA         STA_ADDR, A1
         MOVE.B      #2, D0
         TRAP        #15             ; D1 has the length of the address
+        
+        
+        BRA         CONVERT_TO_ASCII
         
         
         ; LEA         END_MSG, A1
@@ -41,7 +44,7 @@ START:                  ; first instruction of program
 CONVERT_TO_ASCII:
 
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
-        ; BEQ         
+        BEQ         MOVE_OP_CODE
     
         MOVE.B      (A1)+, D2   ; Gives D2 the next Byte from A1
     
@@ -53,28 +56,44 @@ CONVERT_TO_ASCII:
 
 
 NUM_ASCII:
+        SUBI.B      #$1, D1
+        
         MOVE.B      #$30, D3
         SUB.B       D3, D2      ; ASCII numbers start at 30. 30 = 0, 31 = 1, etc
         ADD.B       D2, D4      ; new ASCII number stored at D4
         
-        SUBI.B      #$1, D1
+        CMPI.B      #$0, D1     ; check if we have traversed the whole length
+        BEQ         MOVE_OP_CODE
         
+        
+        ASL.L       #4, D4
+      
         BRA         CONVERT_TO_ASCII
         
         
 LET_ASCII:
+        SUBI.B      #$1, D1
+               
 
         MOVE.B      #$37, D3
         SUB.B       D3, D2      ; Hex letters we care about are from A-F, we can use math do achieve this
         ADD.B       D2, D4      ; 41 is used to represent A in Hex. Hexadecimal subtraction: 41 - 37 = A
                                 ; 46 is used to represent F in Hex. 46 - 37 = F
         
-        SUBI.B      #$1, D1
+        CMPI.B      #$0, D1     ; check if we have traversed the whole length
+        BEQ         MOVE_OP_CODE
+        
+        ASL.L       #4, D4
+        
         
         BRA         CONVERT_TO_ASCII
 
 
 
+
+
+MOVE_OP_CODE:
+        MOVEA.L     D4, A3
 
 
         
@@ -86,20 +105,6 @@ LET_ASCII:
 
         
 * Put program code here
-
-ADDRESS_LOOP:
-        CMP   A0, A2
-        BEQ     DONE
-        MOVE.B  (A0)+, D1
-        MOVE.B  D1, (A3)+
-        MOVE.B  #' ',(A3)+
-        
-        ; LEA     D1, A1
-        
-        ; MOVE.B  #14, D0
-        ; TRAP    #15
-        
-        BRA ADDRESS_LOOP
 
 
 DONE:
