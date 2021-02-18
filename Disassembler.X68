@@ -44,7 +44,7 @@ START:                  ; first instruction of program
 CONVERT_TO_ASCII:
 
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
-        BEQ         MOVE_OP_CODE
+        BEQ         OP_CODE
     
         MOVE.B      (A1)+, D2   ; Gives D2 the next Byte from A1
     
@@ -63,7 +63,7 @@ NUM_ASCII:
         ADD.B       D2, D4      ; new ASCII number stored at D4
         
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
-        BEQ         MOVE_OP_CODE
+        BEQ         OP_CODE
         
         
         ASL.L       #4, D4
@@ -81,7 +81,7 @@ LET_ASCII:
                                 ; 46 is used to represent F in Hex. 46 - 37 = F
         
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
-        BEQ         MOVE_OP_CODE
+        BEQ         OP_CODE
         
         ASL.L       #4, D4
         
@@ -92,13 +92,31 @@ LET_ASCII:
 
 
 
-MOVE_OP_CODE:
+OP_CODE:
         MOVEA.L     D4, A3
-
+        CLR.L       D1
+        MOVE.B      #12, D1
+        LSR.W       D1, D4
 
         
+        
+        
+        
+        ; List of compare and BRA statements
+
+        
+        CMP.B       #$1, D4
+        BRA         OP_CODE_MOVE
+        
+        LEA         ERROR_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
 
 
+
+OP_CODE_MOVE:
+
+        
 
 
 
@@ -126,6 +144,13 @@ START_MSG:
                 DC.B        'Enter a starting address:',0
 END_MSG:
                 DC.B        'Enter an ending address:',0
+                
+ERROR_MSG:
+                DC.B        'Error',0
+                
+SUCCESS_MSG:    DC.B        'Success',0
+                
+                
                 
 STA_ADDR        DS.B        40
 END_ADDR        DS.B        40

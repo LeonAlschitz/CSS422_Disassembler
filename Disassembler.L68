@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 2/18/2021 3:07:09 PM
+Created On: 2/18/2021 3:43:48 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -21,11 +21,11 @@ Created On: 2/18/2021 3:07:09 PM
 00001000                            17      ; can determine OP code from first 4 bits
 00001000                            18      
 00001000                            19  START:                  ; first instruction of program
-00001000  43F9 00001078             20          LEA         START_MSG, A1
+00001000  43F9 000010AC             20          LEA         START_MSG, A1
 00001006  103C 000E                 21          MOVE.B      #14, D0    
 0000100A  4E4F                      22          TRAP        #15
 0000100C                            23          
-0000100C  43F9 000010AB             24          LEA         STA_ADDR, A1
+0000100C  43F9 000010F2             24          LEA         STA_ADDR, A1
 00001012  103C 0002                 25          MOVE.B      #2, D0
 00001016  4E4F                      26          TRAP        #15             ; D1 has the length of the address
 00001018                            27          
@@ -48,7 +48,7 @@ Created On: 2/18/2021 3:07:09 PM
 0000101C                            44  CONVERT_TO_ASCII:
 0000101C                            45  
 0000101C  0C01 0000                 46          CMPI.B      #$0, D1     ; check if we have traversed the whole length
-00001020  6700 003E                 47          BEQ         MOVE_OP_CODE
+00001020  6700 003E                 47          BEQ         OP_CODE
 00001024                            48      
 00001024  1419                      49          MOVE.B      (A1)+, D2   ; Gives D2 the next Byte from A1
 00001026                            50      
@@ -67,7 +67,7 @@ Created On: 2/18/2021 3:07:09 PM
 0000103C  D802                      63          ADD.B       D2, D4      ; new ASCII number stored at D4
 0000103E                            64          
 0000103E  0C01 0000                 65          CMPI.B      #$0, D1     ; check if we have traversed the whole length
-00001042  6700 001C                 66          BEQ         MOVE_OP_CODE
+00001042  6700 001C                 66          BEQ         OP_CODE
 00001046                            67          
 00001046                            68          
 00001046  E984                      69          ASL.L       #4, D4
@@ -85,7 +85,7 @@ Created On: 2/18/2021 3:07:09 PM
 00001054                            81                                  ; 46 is used to represent F in Hex. 46 - 37 = F
 00001054                            82          
 00001054  0C01 0000                 83          CMPI.B      #$0, D1     ; check if we have traversed the whole length
-00001058  6700 0006                 84          BEQ         MOVE_OP_CODE
+00001058  6700 0006                 84          BEQ         OP_CODE
 0000105C                            85          
 0000105C  E984                      86          ASL.L       #4, D4
 0000105E                            87          
@@ -96,64 +96,97 @@ Created On: 2/18/2021 3:07:09 PM
 00001060                            92  
 00001060                            93  
 00001060                            94  
-00001060                            95  MOVE_OP_CODE:
+00001060                            95  OP_CODE:
 00001060  2644                      96          MOVEA.L     D4, A3
-00001062                            97  
-00001062                            98          
-00001062                            99  
-00001062                           100  
-00001062                           101  
-00001062                           102  
-00001062                           103  
-00001062                           104  
-00001062                           105          
-00001062                           106  * Put program code here
-00001062                           107  
-00001062                           108  
-00001062                           109  DONE:
-00001062                           110  
-00001062                           111          
-00001062  103C 0009                112          MOVE.B  #9, D0
-00001066  4E4F                     113          TRAP    #15
-00001068                           114          
-00001068                           115          
-00001068                           116          
-00001068                           117  * Put variables and constants here
-00001068                           118          INCLUDE     'Disassembler_EA_Codes.x68'
-00001068                           119  
-00001068                           120  
-00001068                           121  
-00001068                           122  EACODE:
-00001068= 54 45 53 54 4C 4F ...    123          DC.B    'TESTLOC',0
-00001070                           124  
-00001070                           125  
-00001070                           126  
-00001070                           127  
-00001070                           128  
-00001070                           129  -------------------- end include --------------------
-00001070                           130          INCLUDE     'Disassembler_OP_Codes.x68'
-00001070                           131  
-00001070                           132  OPCODE:
-00001070= 54 45 53 54 4C 4F ...    133          DC.B    'TESTLOC',0
-00001078                           134  
-00001078                           135  
-00001078                           136  
-00001078                           137  
-00001078                           138  -------------------- end include --------------------
-00001078                           139  
-00001078                           140  
-00001078                           141  
-00001078                           142  
-00001078                           143  START_MSG:
-00001078= 45 6E 74 65 72 20 ...    144                  DC.B        'Enter a starting address:',0
-00001092                           145  END_MSG:
-00001092= 45 6E 74 65 72 20 ...    146                  DC.B        'Enter an ending address:',0
-000010AB                           147                  
-000010AB                           148  STA_ADDR        DS.B        40
-000010D3                           149  END_ADDR        DS.B        40
-000010FB                           150                  
-000010FB                           151                  
-000010FB                           152          END    START        ; last line of source
+00001062  4281                      97          CLR.L       D1
+00001064  123C 000C                 98          MOVE.B      #12, D1
+00001068  E26C                      99          LSR.W       D1, D4
+0000106A                           100  
+0000106A                           101          
+0000106A                           102          
+0000106A                           103          
+0000106A                           104          
+0000106A                           105          ; List of compare and BRA statements
+0000106A                           106  
+0000106A                           107          
+0000106A  B83C 0001                108          CMP.B       #$1, D4
+0000106E  6000 000E                109          BRA         OP_CODE_MOVE
+00001072                           110          
+00001072  43F9 000010DF            111          LEA         ERROR_MSG, A1
+00001078  103C 000E                112          MOVE.B      #14, D0    
+0000107C  4E4F                     113          TRAP        #15
+0000107E                           114  
+0000107E                           115  
+0000107E                           116  
+0000107E                           117  OP_CODE_MOVE:
+0000107E                           118  
+0000107E  43F9 000010E5            119          LEA         SUCCESS_MSG, A1
+00001084  103C 000E                120          MOVE.B      #14, D0    
+00001088  4E4F                     121          TRAP        #15
+0000108A                           122  
+0000108A  43F9 000010ED            123          LEA         MOVE_MSG, A1
+00001090  103C 000E                124          MOVE.B      #14, D0    
+00001094  4E4F                     125          TRAP        #15
+00001096                           126  
+00001096                           127  
+00001096                           128  
+00001096                           129          
+00001096                           130  * Put program code here
+00001096                           131  
+00001096                           132  
+00001096                           133  DONE:
+00001096                           134  
+00001096                           135          
+00001096  103C 0009                136          MOVE.B  #9, D0
+0000109A  4E4F                     137          TRAP    #15
+0000109C                           138          
+0000109C                           139          
+0000109C                           140          
+0000109C                           141  * Put variables and constants here
+0000109C                           142          INCLUDE     'Disassembler_EA_Codes.x68'
+0000109C                           143  
+0000109C                           144  
+0000109C                           145  
+0000109C                           146  EACODE:
+0000109C= 54 45 53 54 4C 4F ...    147          DC.B    'TESTLOC',0
+000010A4                           148  
+000010A4                           149  
+000010A4                           150  
+000010A4                           151  
+000010A4                           152  
+000010A4                           153  -------------------- end include --------------------
+000010A4                           154          INCLUDE     'Disassembler_OP_Codes.x68'
+000010A4                           155  
+000010A4                           156  OPCODE:
+000010A4= 54 45 53 54 4C 4F ...    157          DC.B    'TESTLOC',0
+000010AC                           158  
+000010AC                           159  
+000010AC                           160  
+000010AC                           161  
+000010AC                           162  -------------------- end include --------------------
+000010AC                           163  
+000010AC                           164  
+000010AC                           165  
+000010AC                           166  
+000010AC                           167  START_MSG:
+000010AC= 45 6E 74 65 72 20 ...    168                  DC.B        'Enter a starting address:',0
+000010C6                           169  END_MSG:
+000010C6= 45 6E 74 65 72 20 ...    170                  DC.B        'Enter an ending address:',0
+000010DF                           171                  
+000010DF                           172  ERROR_MSG:
+000010DF= 45 72 72 6F 72 00        173                  DC.B        'Error',0
+000010E5                           174  SUCCESS_MSG:    
+000010E5= 53 75 63 63 65 73 ...    175                  DC.B        'Success',0
+000010ED                           176                  
+000010ED                           177  MOVE_MSG:
+000010ED= 4D 4F 56 45 00           178                  DC.B        'MOVE',0
+000010F2                           179                  
+000010F2                           180                  
+000010F2                           181  STA_ADDR        DS.B        40
+0000111A                           182  END_ADDR        DS.B        40
+00001142                           183                  
+00001142                           184                  
+00001142                           185          END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -163,14 +196,18 @@ SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
 CONVERT_TO_ASCII    101C
-DONE                1062
-EACODE              1068
-END_ADDR            10D3
-END_MSG             1092
+DONE                1096
+EACODE              109C
+END_ADDR            111A
+END_MSG             10C6
+ERROR_MSG           10DF
 LET_ASCII           104A
-MOVE_OP_CODE        1060
+MOVE_MSG            10ED
 NUM_ASCII           1034
-OPCODE              1070
+OPCODE              10A4
+OP_CODE             1060
+OP_CODE_MOVE        107E
 START               1000
-START_MSG           1078
-STA_ADDR            10AB
+START_MSG           10AC
+STA_ADDR            10F2
+SUCCESS_MSG         10E5
