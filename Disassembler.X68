@@ -26,6 +26,7 @@ START:                  ; first instruction of program
         TRAP        #15             ; D1 has the length of the address
         
         
+        
         BRA         CONVERT_TO_ASCII
         
         
@@ -108,6 +109,9 @@ OP_CODE:
         CMP.B       #$1, D4
         BRA         OP_CODE_MOVE
         
+        CMP.B       #$5, D4
+        BRA         OP_CODE_ADDQ
+        
         LEA         ERROR_MSG, A1
         MOVE.B      #14, D0    
         TRAP        #15
@@ -115,9 +119,15 @@ OP_CODE:
 
 
 OP_CODE_MOVE:
+        LEA         MOVE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
 
         
-
+OP_CODE_ADDQ:
+        LEA         ADDQ_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
 
 
 
@@ -149,6 +159,9 @@ ERROR_MSG:
                 DC.B        'Error',0
                 
 SUCCESS_MSG:    DC.B        'Success',0
+
+ADDQ_MSG:       DC.B        'ADDQ',0
+MOVE_MSG:       DC.B        'MOVE',0
                 
                 
                 
@@ -157,6 +170,7 @@ END_ADDR        DS.B        40
                 
                 
         END    START        ; last line of source
+
 
 
 
