@@ -115,20 +115,26 @@ OP_CODE:
         LEA         ERROR_MSG, A1
         MOVE.B      #14, D0    
         TRAP        #15
-
+        BRA         DONE
 
 
 OP_CODE_MOVE:
         LEA         MOVE_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
+        BRA         DONE
 
         
 OP_CODE_ADDQ:
+
+
+
+
+
         LEA         ADDQ_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
-
+        BRA         DONE
 
 
         
@@ -160,9 +166,7 @@ ERROR_MSG:
                 
 SUCCESS_MSG:    DC.B        'Success',0
 
-ADDQ_MSG:       DC.B        'ADDQ',0
-MOVE_MSG:       DC.B        'MOVE',0
-                
+  
                 
                 
 STA_ADDR        DS.B        40
@@ -170,6 +174,7 @@ END_ADDR        DS.B        40
                 
                 
         END    START        ; last line of source
+
 
 
 
