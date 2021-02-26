@@ -1,6 +1,6 @@
-00001000 Starting Address
+00000000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 2/18/2021 11:46:33 AM
+Created On: 2/26/2021 3:27:55 AM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -9,28 +9,159 @@ Created On: 2/18/2021 11:46:33 AM
 00000000                             5  * Description:
 00000000                             6  *-----------------------------------------------------------
 00000000                             7  
-00000000                             8  * Put program code here
+00000000                             8  
 00000000                             9  
-00000000  FFFF FFFF                 10      SIMHALT             ; halt simulator
-00000004                            11  
-00000004                            12  * Put variables and constants here
-00000004                            13  
-00000004  4282                      14  JMP_TBL     CLR.L       D2
-00000006  3407                      15              MOVE.W      D7,D2       *Copies D7 contents to D2 for manipulation
-00000008  4281                      16              CLR.L       D1
-0000000A  123C 000C                 17              MOVE.B      #12,D1      *Moves 12 into D1
-0000000E  E26A                      18              LSR.W       D1,D2
-00000010                            19  
-00000010                            20  
-00000010                            21  
-00000010                            22  
-Line 23 WARNING: END directive missing, starting address not set
+00000000                            10  ; D4 Contains Original hex code
+00000000                            11  ; D3 Contains modified hex code
+00000000                            12  
+00000000                            13  ; D1 is used to bit shift
+00000000                            14  
+00000000                            15  OP_CODE:
+00000000                            16          
+00000000  4283                      17          CLR.L       D3
+00000002  2604                      18          MOVE.L      D4, D3
+00000004  4281                      19          CLR.L       D1
+00000006  4282                      20          CLR.L       D2
+00000008                            21  
+00000008                            22          
+00000008  123C 000C                 23          MOVE.B      #12, D1
+0000000C  E26B                      24          LSR.W       D1, D3
+0000000E                            25  
+0000000E  4EB9 00000044             26          JSR         ISOLATE_DESTM
+00000014                            27        
+00000014  B63C 0001                 28          CMP.B       #$1, D3
+00000018  6000 003A                 29          BRA         OP_CODE_BASE_MOVE ;First 4 bits:  0001
+0000001C                            30          
+0000001C  B63C 0002                 31          CMP.B       #$2, D3
+00000020  6000 004E                 32          BRA         OP_CODE_MOVE ;First 4 bits:  0010
+00000024                            33          
+00000024  B63C 0003                 34          CMP.B       #$3, D3
+00000028  6000 0046                 35          BRA         OP_CODE_MOVE ;First 4 bits:  0011
+0000002C                            36          
+0000002C                            37          
+0000002C                            38          ; CMP.B       #$4, D3
+0000002C                            39          
+0000002C                            40          ; CMP.B       #$5, D3
+0000002C                            41          ; CMP.B       #$6, D3
+0000002C                            42          ; CMP.B       #$7, D3
+0000002C                            43          ; CMP.B       #$8, D3
+0000002C                            44          ; CMP.B       #$9, D3
+0000002C                            45          ; CMP.B       #$A, D3
+0000002C                            46          ; CMP.B       #$B, D3
+0000002C                            47          ; CMP.B       #$C, D3
+0000002C                            48          ; CMP.B       #$D, D3
+0000002C                            49          ; CMP.B       #$E, D3
+0000002C                            50          
+0000002C                            51          
+0000002C                            52          
+0000002C  B63C 0005                 53          CMP.B       #$5, D3
+00000030  6000 003E                 54          BRA         OP_CODE_ADDQ
+00000034                            55          
+Line 56 ERROR: Undefined symbol
+00000034  43F9 004DBD16             56          LEA         ERROR_MSG, A1
+0000003A  103C 000E                 57          MOVE.B      #14, D0    
+0000003E  4E4F                      58          TRAP        #15
+Line 59 ERROR: Undefined symbol
+00000040  6000 BCD4                 59          BRA         DONE
+00000044                            60  
+00000044                            61  
+00000044                            62  
+00000044                            63  
+00000044                            64          ;  Move valid sizes: 00, 11 10
+00000044                            65          ;  MoveA valid sizes: 11, 10
+00000044                            66          ; Code = 103C
+00000044                            67  
+00000044                            68  
+00000044                            69  
+00000044                            70  
+00000044                            71  ; Functions to help isolate bits
+00000044                            72  ; 0000 000X XX00 0000
+00000044                            73  ISOLATE_DESTM:
+00000044  4283                      74          CLR.L       D3          
+00000046  3604                      75          MOVE.W      D4,D3 ; D3 = YYYY YYYX XXYY YYYY
+00000048  EF4B                      76          LSL.W       #7,D3 ; Shift left 7 bits to 0 out those values  D3 = XXXY YYYY Y000 0000 
+0000004A  123C 000D                 77          MOVE.B      #13,D1
+0000004E  E26B                      78          LSR.W       D1,D3 ; Shift right 13. 7 to compensate for previous shift and another 6 on top; XXXY YYYY Y000 0000  => 0000 0000 0000 0XXX
+00000050  4E75                      79          RTS 
+00000052                            80      
+00000052                            81      
+00000052  4E75                      82      RTS
+00000054                            83  
+00000054                            84  
+00000054                            85  
+00000054                            86  
+00000054                            87  
+00000054                            88          
+00000054                            89          
+00000054                            90          
+00000054                            91  ; MOVE BLOCK ----------------------------------
+00000054                            92  OP_CODE_BASE_MOVE:
+00000054                            93          ; This should only execute for Move.B
+00000054  43F9 00000085             94          LEA         MOVE_MSG, A1
+0000005A  103C 000E                 95          MOVE.B      #14, D0
+0000005E  4E4F                      96          TRAP        #15
+00000060  43F9 0000008A             97          LEA         BYTE_MSG, A1
+00000066  103C 000E                 98          MOVE.B      #14, D0
+0000006A  4E4F                      99          TRAP        #15
+Line 100 ERROR: Undefined symbol
+0000006C  6000 BCA8                100          BRA         DONE
+00000070                           101  
+00000070                           102  
+00000070                           103  
+00000070                           104  
+00000070                           105  
+00000070                           106          ; Code = 
+00000070                           107          ; Destination Mode is always 001
+00000070                           108  OP_CODE_MOVEA:
+00000070                           109  
+00000070                           110  OP_CODE_MOVE:
+00000070                           111  
+00000070                           112  
+00000070                           113  
+00000070                           114  ; END MOVE BLOCK ------------------------------
+00000070                           115  
+00000070                           116          
+00000070                           117  OP_CODE_ADDQ:
+00000070                           118  
+00000070  43F9 00000080            119          LEA         ADDQ_MSG, A1
+00000076  103C 000E                120          MOVE.B      #14, D0
+0000007A  4E4F                     121          TRAP        #15
+Line 122 ERROR: Undefined symbol
+0000007C  6000 BC98                122          BRA         DONE
+00000080                           123  
+00000080                           124  
+00000080= 41 44 44 51 00           125  ADDQ_MSG:       DC.B        'ADDQ',0
+00000085= 4D 4F 56 45 00           126  MOVE_MSG:       DC.B        'MOVE',0
+0000008A                           127  
+0000008A                           128  
+0000008A                           129  ; Size messages
+0000008A                           130  
+0000008A= 2E 42 00                 131  BYTE_MSG:       DC.B        '.B',0
+0000008D= 2E 57 00                 132  WORD_MSG:       DC.B        '.W',0
+00000090= 2E 4C 00                 133  LONG_MSG:       DC.B        '.L',0
+00000093                           134  
+00000093                           135  
+00000093                           136  
+00000093                           137  
+00000093                           138  
+00000093                           139  
+Line 140 WARNING: END directive missing, starting address not set
 
-No errors detected
+4 errors detected
 1 warning generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-JMP_TBL             4
+ADDQ_MSG            80
+BYTE_MSG            8A
+ISOLATE_DESTM       44
+LONG_MSG            90
+MOVE_MSG            85
+OP_CODE             0
+OP_CODE_ADDQ        70
+OP_CODE_BASE_MOVE   54
+OP_CODE_MOVE        70
+OP_CODE_MOVEA       70
+WORD_MSG            8D

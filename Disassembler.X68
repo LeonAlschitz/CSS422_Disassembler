@@ -27,7 +27,7 @@ START:                  ; first instruction of program
         
         
         
-        BRA         CONVERT_TO_ASCII
+        BRA         CONVERT_ASCII
         
         
         ; LEA         END_MSG, A1
@@ -42,10 +42,10 @@ START:                  ; first instruction of program
 
 
 
-CONVERT_TO_ASCII:
+CONVERT_ASCII:                  ; Convert Ascii values to Hex. 00011111 00011110 00100001 00101011 = 31 30 33 43. 31 30 33 43 => 0001 0000 0011 1100 = 1 0 3 C
 
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
-        BEQ         OP_CODE
+        BEQ         JUMP_OP_CODE
     
         MOVE.B      (A1)+, D2   ; Gives D2 the next Byte from A1
     
@@ -64,12 +64,12 @@ NUM_ASCII:
         ADD.B       D2, D4      ; new ASCII number stored at D4
         
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
-        BEQ         OP_CODE
+        BEQ         JUMP_OP_CODE
         
         
         ASL.L       #4, D4
       
-        BRA         CONVERT_TO_ASCII
+        BRA         CONVERT_ASCII
         
         
 LET_ASCII:
@@ -82,63 +82,19 @@ LET_ASCII:
                                 ; 46 is used to represent F in Hex. 46 - 37 = F
         
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
-        BEQ         OP_CODE
+        BEQ         JUMP_OP_CODE
         
         ASL.L       #4, D4
         
         
-        BRA         CONVERT_TO_ASCII
+        BRA         CONVERT_ASCII
 
 
 
 
 
-OP_CODE:
-        MOVEA.L     D4, A3
-        CLR.L       D1
-        MOVE.B      #12, D1
-        LSR.W       D1, D4
-
-        
-        
-        
-        
-        ; List of compare and BRA statements
-
-        
-        CMP.B       #$1, D4
-        BRA         OP_CODE_MOVE
-        
-        CMP.B       #$5, D4
-        BRA         OP_CODE_ADDQ
-        
-        LEA         ERROR_MSG, A1
-        MOVE.B      #14, D0    
-        TRAP        #15
-        BRA         DONE
 
 
-OP_CODE_MOVE:
-        LEA         MOVE_MSG, A1
-        MOVE.B      #14, D0
-        TRAP        #15
-        BRA         DONE
-
-        
-OP_CODE_ADDQ:
-
-
-
-
-
-        LEA         ADDQ_MSG, A1
-        MOVE.B      #14, D0
-        TRAP        #15
-        BRA         DONE
-
-
-        
-* Put program code here
 
 
 DONE:
@@ -173,7 +129,12 @@ STA_ADDR        DS.B        40
 END_ADDR        DS.B        40
                 
                 
-        END    START        ; last line of source
+        END    START    
+
+
+
+
+
 
 
 
