@@ -12,13 +12,15 @@
 
 ; D1 is used to bit shift
 
-JUMP_OP_CODE:       ; D4 = XXXX YYYY YYYY YYYY
+
+; D4 = XXXX YYYY YYYY YYYY
+JUMP_OP_CODE:
         CLR.L       D3
         MOVE.L      D4, D3
         CLR.L       D1
         CLR.L       D2
         MOVE.B      #12, D1
-        LSR.W       D1, D3  ; D1 = 0000 0000 0000 XXXX
+        LSR.W       D1, D3  ; D3 = 0000 0000 0000 XXXX
 
         BRA         JUMP_1
         
@@ -31,7 +33,8 @@ JUMP_0:
 JUMP_1:
         CMP.B       #$1, D3 ;First 4 bits:  0001
         BNE         JUMP_2
-        JSR         OP_CODE_BASE_MOVE 
+        JSR         OP_CODE_BASE_MOVE
+        JSR         EA_MOVE 
         RTS
 
 
@@ -41,17 +44,22 @@ JUMP_2:             ; MOVE.L or MOVEA.L
         JSR         ISOLATE_DESTM
         CMP.B       #$1, D3 
         BEQ         J_MOVEA_L
-        JSR         J_MOVE_L
+        CMP.B       #$2, D3 
+        BEQ         J_MOVE_L
+        JSR         EA_MOVE 
         RTS
         
 
 JUMP_3:             ; MOVE.W or MOVEA.W
         CMP.B       #$3, D3  ;First 4 bits:  0011
-        ; BNE         JUMP_3
+        ; BNE         JUMP_4
         JSR         ISOLATE_DESTM
         CMP.B       #$1, D3 
         BEQ         J_MOVEA_W
-        JSR         J_MOVE_W
+        CMP.B       #$2, D3
+        BEQ         J_MOVE_W
+        
+        JSR         EA_MOVE
         
         RTS
 
@@ -196,6 +204,12 @@ MOVEA_MSG:       DC.B        'MOVEA',0
 BYTE_MSG:       DC.B        '.B',0
 WORD_MSG:       DC.B        '.W',0
 LONG_MSG:       DC.B        '.L',0
+
+
+
+
+
+
 
 
 

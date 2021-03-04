@@ -1,6 +1,6 @@
-00001000 Starting Address
+00000000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 2/18/2021 11:45:15 AM
+Created On: 3/4/2021 1:35:56 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -9,19 +9,145 @@ Created On: 2/18/2021 11:45:15 AM
 00000000                             5  * Description:
 00000000                             6  *-----------------------------------------------------------
 00000000                             7  
-00000000                             8  * Put program code here
-00000000                             9  
-00000000  FFFF FFFF                 10      SIMHALT             ; halt simulator
-00000004                            11  
-00000004                            12  * Put variables and constants here
-00000004                            13  
-00000004                            14  
-00000004                            15  EACODE:
-00000004= 54 45 53 54 4C 4F ...     16          DC.B    'TESTLOC',0
-0000000C                            17  
-0000000C                            18  
-0000000C                            19  
-Line 20 WARNING: END directive missing, starting address not set
+00000000                             8  
+00000000                             9  ; D3 = OP size. ie. Byte, Word, Long
+00000000                            10  ; D4 = Original hex code
+00000000                            11  ; D5 = Current Register or Mode being isolated
+00000000                            12  
+00000000                            13  ; A3 will store starting address
+00000000                            14  ; A4 will store ending address
+00000000                            15  
+00000000                            16  
+00000000                            17  ; -------------------------------------
+00000000                            18  ; General outline
+00000000                            19  
+00000000                            20  
+00000000                            21  ; Get Source Mode and Registration
+00000000                            22  ; Get Destination Mode and Registration
+00000000                            23  ; based off of these values, you can determine the Addressing mode, and size
+00000000                            24  
+00000000                            25  ; Depending on the opcode, the mode can be found in a few different locations
+00000000                            26  
+00000000                            27  
+00000000                            28  ; Print out the rest of the data as you process it
+00000000                            29  
+00000000                            30  
+00000000                            31  ; --------------------------------------
+00000000                            32  
+00000000                            33  
+00000000                            34  
+00000000                            35  ; based on the size of the move operation Print out an amount of data as is.
+00000000                            36  ; MOVE.B will print out the operation and 1 additional Byte after the OP code as text.
+00000000                            37  EA_MOVE:
+00000000                            38  
+00000000                            39  ; A = Size
+00000000                            40  ; B = Destination Register
+00000000                            41  ; C = Destination Mode
+00000000                            42  ; D = Source Mode
+00000000                            43  ; E = Source Register
+00000000                            44  
+00000000                            45  ; 00AA BBBC CCDD DEEE 
+00000000                            46      
+00000000  4285                      47          CLR.L   D5
+00000002  3A04                      48          MOVE.W  D4, D5
+00000004                            49          
+00000004  123C 000A                 50          MOVE.B      #10,D1
+00000008  E36D                      51          LSL.W       D1,D5       
+0000000A  123C 000D                 52          MOVE.B      #13,D1
+0000000E  E26D                      53          LSR.W       D1,D5
+00000010                            54          ;   Isolating Source Mode
+00000010                            55          
+00000010  4EB9 00000018             56          JSR         EA_JUMP_TABLE
+00000016                            57      
+00000016  4E75                      58          RTS
+00000018                            59      
+00000018                            60  
+00000018                            61  ; Possible modes Dn = 0,An = 1,(An) = 2,(An)+ = 3,-(An) = 4
+00000018                            62  EA_JUMP_TABLE:
+00000018                            63  
+00000018  BA3C 0000                 64          CMP.B       #0,D5
+0000001C  6700 001C                 65          BEQ         J_TBL_D
+00000020  BA3C 0002                 66          CMP.B       #2,D5
+00000024  6700 002E                 67          BEQ         J_TBL_A
+00000028  BA3C 0003                 68          CMP.B       #3,D5
+0000002C  6700 0026                 69          BEQ         J_TBL_A
+00000030  BA3C 0004                 70          CMP.B       #4,D5
+00000034  6700 006A                 71          BEQ         J_TBL_A_DECR
+00000038                            72          ;   deal with errors here
+00000038  4E75                      73          RTS
+0000003A                            74  
+0000003A                            75  J_TBL_D:
+0000003A  43F9 000000C6             76          LEA         SPACE_MSG, A1
+00000040  103C 000E                 77          MOVE.B      #14, D0
+00000044  4E4F                      78          TRAP        #15
+00000046  43F9 000000C9             79          LEA         MODE_0_MSG, A1 ; D#
+0000004C  103C 000E                 80          MOVE.B      #14, D0
+00000050  4E4F                      81          TRAP        #15
+00000052                            82          ; add code to deal with register
+00000052                            83  
+00000052  4E75                      84          RTS
+00000054                            85  
+00000054                            86  J_TBL_A:
+00000054  43F9 000000C6             87          LEA         SPACE_MSG, A1
+0000005A  103C 000E                 88          MOVE.B      #14, D0
+0000005E  4E4F                      89          TRAP        #15
+00000060  43F9 000000CD             90          LEA         MODE_A_MSG, A1 ; (A#)
+00000066  103C 000E                 91          MOVE.B      #14, D0
+0000006A  4E4F                      92          TRAP        #15
+0000006C                            93          ; add code to deal with register
+0000006C  43F9 000000D0             94          LEA         MODE_A_1_MSG, A1
+00000072  103C 000E                 95          MOVE.B      #14, D0
+00000076  4E4F                      96          TRAP        #15
+00000078                            97  
+00000078  4E75                      98          RTS
+0000007A                            99      
+0000007A                           100  J_TBL_A_INCR:
+0000007A  43F9 000000C6            101          LEA         SPACE_MSG, A1
+00000080  103C 000E                102          MOVE.B      #14, D0
+00000084  4E4F                     103          TRAP        #15
+00000086  43F9 000000CD            104          LEA         MODE_A_MSG, A1 ; (A#)+
+0000008C  103C 000E                105          MOVE.B      #14, D0
+00000090  4E4F                     106          TRAP        #15
+00000092                           107          ; add code to deal with register
+00000092  43F9 000000D2            108          LEA         MODE_A_2_MSG, A1
+00000098  103C 000E                109          MOVE.B      #14, D0
+0000009C  4E4F                     110          TRAP        #15
+0000009E                           111  
+0000009E  4E75                     112          RTS
+000000A0                           113          
+000000A0                           114  J_TBL_A_DECR:
+000000A0  43F9 000000C6            115          LEA         SPACE_MSG, A1
+000000A6  103C 000E                116          MOVE.B      #14, D0
+000000AA  4E4F                     117          TRAP        #15
+000000AC  43F9 000000D5            118          LEA         MODE_MINUS_MSG, A1 ; -(A#)
+000000B2  103C 000E                119          MOVE.B      #14, D0
+000000B6  4E4F                     120          TRAP        #15
+000000B8                           121          ; add code to deal with register
+000000B8  43F9 000000D0            122          LEA         MODE_A_1_MSG, A1
+000000BE  103C 000E                123          MOVE.B      #14, D0
+000000C2  4E4F                     124          TRAP        #15
+000000C4                           125  
+000000C4  4E75                     126          RTS
+000000C6                           127      
+000000C6                           128          
+000000C6                           129  
+000000C6                           130  
+000000C6= 20 20 00                 131  SPACE_MSG:      DC.B        '  ',0
+000000C9                           132  
+000000C9= 44 00                    133  MODE_0_MSG:     DC.B        'D',0
+000000CB= 41 00                    134  MODE_1_MSG:     DC.B        'A',0
+000000CD= 28 41 00                 135  MODE_A_MSG:     DC.B        '(A',0
+000000D0= 29 00                    136  MODE_A_1_MSG:   DC.B        ')',0
+000000D2= 29 2B 00                 137  MODE_A_2_MSG:   DC.B        ')+',0
+000000D5= 2D 28 41 00              138  MODE_MINUS_MSG: DC.B        '-(A',0
+000000D9                           139  
+000000D9                           140  
+000000D9                           141  
+000000D9                           142  
+000000D9                           143  
+000000D9                           144  
+000000D9                           145  
+Line 146 WARNING: END directive missing, starting address not set
 
 No errors detected
 1 warning generated
@@ -30,4 +156,16 @@ No errors detected
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-EACODE              4
+EA_JUMP_TABLE       18
+EA_MOVE             0
+J_TBL_A             54
+J_TBL_A_DECR        A0
+J_TBL_A_INCR        7A
+J_TBL_D             3A
+MODE_0_MSG          C9
+MODE_1_MSG          CB
+MODE_A_1_MSG        D0
+MODE_A_2_MSG        D2
+MODE_A_MSG          CD
+MODE_MINUS_MSG      D5
+SPACE_MSG           C6
