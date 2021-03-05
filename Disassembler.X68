@@ -150,8 +150,8 @@ DONE:
         
         
 * Put variables and constants here
-        INCLUDE     'Disassembler_EA_Codes.x68'
-        INCLUDE     'Disassembler_OP_Codes.x68'
+        INCLUDE     'Disassembler_EA_Codes.X68'
+        INCLUDE     'Disassembler_OP_Codes.X68'
 
 
 
@@ -181,6 +181,10 @@ END_ADDR        DS.B        40
 
 
 
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

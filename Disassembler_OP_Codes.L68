@@ -1,36 +1,537 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 2/18/2021 11:46:33 AM
+Created On: 3/5/2021 6:21:04 AM
 
-00000000                             1  *-----------------------------------------------------------
-00000000                             2  * Title      :
-00000000                             3  * Written by :
-00000000                             4  * Date       :
-00000000                             5  * Description:
-00000000                             6  *-----------------------------------------------------------
-00000000                             7  
-00000000                             8  * Put program code here
+00000000                             1  ; D4 Contains Original hex code
+00000000                             2  ; D3 Contains modified hex code
+00000000                             3  
+00000000                             4  ; D1 is used to bit shift
+00000000                             5  
+00000000                             6  
+00000000                             7  ; D4 = XXXX YYYY YYYY YYYY
+00000000                             8  PRINT_BYTE:
 00000000                             9  
-00000000  FFFF FFFF                 10      SIMHALT             ; halt simulator
-00000004                            11  
-00000004                            12  * Put variables and constants here
-00000004                            13  
-00000004  4282                      14  JMP_TBL     CLR.L       D2
-00000006  3407                      15              MOVE.W      D7,D2       *Copies D7 contents to D2 for manipulation
-00000008  4281                      16              CLR.L       D1
-0000000A  123C 000C                 17              MOVE.B      #12,D1      *Moves 12 into D1
-0000000E  E26A                      18              LSR.W       D1,D2
-00000010                            19  
-00000010                            20  
-00000010                            21  
-00000010                            22  
-Line 23 WARNING: END directive missing, starting address not set
+00000000                            10  PRINT_WORD:
+00000000                            11  
+Line 12 ERROR: Invalid syntax
+00000000                            12  PRINT LONG:
+00000000                            13  
+00000000                            14  
+00000000                            15  INVALID_INSTR:
+00000000  4DF9 000002C3             16          LEA         ERROR_INSTR, A6
+00000006  103C 000E                 17          MOVE.B      #14, D0
+0000000A  4E4F                      18          TRAP        #15
+Line 19 ERROR: Undefined symbol
+0000000C  6000 BD08                 19          BRA         DONE
+00000010                            20          
+00000010                            21  JUMP_OP_CODE:
+00000010  4283                      22          CLR.L       D3
+00000012  2604                      23          MOVE.L      D4, D3
+00000014  4843                      24          SWAP       D3
+00000016  E59B                      25          ROL.L      #2, D3 ;
+00000018  C63C 0003                 26          AND.B      #$03,D3 ;ISOLATE 
+0000001C  B63C 0000                 27          CMP.B      #$0,D3 ;
+Line 28 ERROR: Invalid syntax
+00000020                            28          BEQ        JUMP_0;MOVE,MOVEA,ORI
+00000020                            29  
+00000020  4283                      30          CLR.L       D3
+00000022  2604                      31          MOVE.L      D4, D3
+00000024  4843                      32          SWAP       D3
+00000026  E99B                      33          ROL.L       #4, D3 ;
+00000028  C63C 000F                 34          AND.B       #$0F,D3 ; MASK 
+0000002C                            35  
+0000002C                            36          
+0000002C  B63C 0001                 37          CMP.B       #1, D3
+00000030  6700 005C                 38          BEQ         JUMP_1 ;
+00000034                            39          
+00000034  B63C 0003                 40          CMP.B       #3, D3
+00000038  6700 0090                 41          BEQ         JUMP_3 ;
+0000003C                            42          
+0000003C  B63C 0004                 43          CMP.B       #4, D3
+00000040  6700 00AA                 44          BEQ         JUMP_4 ;
+00000044                            45  
+00000044  B63C 0005                 46          CMP.B       #5, D3
+00000048  6700 00A4                 47          BEQ         JUMP_5 ;
+0000004C                            48    
+0000004C  B63C 0006                 49          CMP.B       #6, D3
+00000050  6700 00AA                 50          BEQ         JUMP_6 ;
+00000054                            51          
+00000054  B63C 0007                 52          CMP.B       #7, D3
+00000058  6700 00D4                 53          BEQ         JUMP_7 ;
+0000005C                            54          
+0000005C  B63C 0008                 55          CMP.B       #8, D3
+00000060  6700 00DC                 56          BEQ         JUMP_8 ;
+00000064                            57          
+00000064  B63C 0009                 58          CMP.B       #9, D3
+00000068  6700 00D4                 59          BEQ         JUMP_9 ;
+0000006C                            60          
+Line 61 ERROR: Undefined symbol
+0000006C  B63C 0016                 61          CMP.B       #B, D3
+00000070  6700 00E6                 62          BEQ         JUMP_B ; 
+00000074                            63          
+Line 64 ERROR: Undefined symbol
+00000074  B63C 0016                 64          CMP.B       #C, D3
+00000078  6700 00DE                 65          BEQ         JUMP_C ;
+0000007C                            66  
+Line 67 ERROR: Undefined symbol
+0000007C  B63C 0016                 67          CMP.B       #D, D3
+00000080  6700 00D6                 68          BEQ         JUMP_D ;
+00000084                            69          
+Line 70 ERROR: Undefined symbol
+00000084  B63C 0016                 70          CMP.B       #E, D3
+00000088  6700 00DC                 71          BEQ         JUMP_E ;
+0000008C                            72  
+0000008C                            73               
+0000008C                            74          
+0000008C                            75  JUMP_0:
+0000008C                            76          *ORI/MOVE/MOVEA
+0000008C  4E75                      77          RTS 
+0000008E                            78          
+0000008E                            79          
+0000008E                            80  JUMP_1:
+0000008E  B63C 0001                 81          CMP.B       #$1, D3 ;First 4 bits:  0001
+00000092  6600 0010                 82          BNE         JUMP_2
+00000096  4EB9 0000017A             83          JSR         OP_CODE_BASE_MOVE
+Line 84 ERROR: Undefined symbol
+0000009C  4EB9 004DBD16             84          JSR         EA_MOVE 
+000000A2  4E75                      85          RTS
+000000A4                            86  
+000000A4                            87  
+000000A4                            88  JUMP_2:             ; MOVE.L or MOVEA.L
+000000A4  B63C 0002                 89          CMP.B       #$2, D3 ;First 4 bits:  0010
+000000A8  6600 0020                 90          BNE         JUMP_3
+000000AC  4EB9 0000016C             91          JSR         ISOLATE_DESTM
+000000B2  B63C 0001                 92          CMP.B       #$1, D3 
+000000B6  6700 00DC                 93          BEQ         J_MOVEA_L
+000000BA  B63C 0002                 94          CMP.B       #$2, D3 
+000000BE  6700 00EE                 95          BEQ         J_MOVE_L
+Line 96 ERROR: Undefined symbol
+000000C2  4EB9 004DBD16             96          JSR         EA_MOVE 
+000000C8  4E75                      97          RTS
+000000CA                            98          
+000000CA                            99  
+000000CA                           100  JUMP_3:             ; MOVE.W or MOVEA.W
+000000CA  B63C 0003                101          CMP.B       #$3, D3  ;First 4 bits:  0011
+000000CE                           102          ; BNE         JUMP_4
+000000CE  4EB9 0000016C            103          JSR         ISOLATE_DESTM
+000000D4  B63C 0001                104          CMP.B       #$1, D3 
+000000D8  6700 00EE                105          BEQ         J_MOVEA_W
+000000DC  B63C 0002                106          CMP.B       #$2, D3
+000000E0  6700 0100                107          BEQ         J_MOVE_W
+000000E4                           108          
+Line 109 ERROR: Undefined symbol
+000000E4  4EB9 004DBD16            109          JSR         EA_MOVE
+000000EA                           110          
+000000EA  4E75                     111          RTS
+000000EC                           112  
+000000EC                           113  
+000000EC                           114  JUMP_4:
+000000EC                           115  
+000000EC  4E75                     116          RTS 
+000000EE                           117  
+000000EE                           118  
+000000EE                           119  
+000000EE                           120  JUMP_5:
+000000EE  4283                     121          CLR.L       D3
+000000F0  2604                     122          MOVE.L      D4, D3
+000000F2  0803 0008                123          BTST         #8,D3 ;
+000000F6  6700 0106                124          BEQ          OP_CODE_ADDQ ; 
+000000FA  4E75                     125          RTS
+000000FC                           126          
+000000FC                           127  JUMP_6:
+000000FC  4283                     128          CLR.L       D3
+000000FE  3604                     129          MOVE.W      D4, D3
+00000100  B67C 4E71                130          CMP.W  #$4E71, D3 ;NOP 
+00000104  6700 011E                131          BEQ OP_CODE_NOP
+00000108                           132          
+00000108  4283                     133          CLR.L       D3
+0000010A  3604                     134          MOVE.W      D4, D3
+0000010C  E08B                     135          LSR.L  #8, D3 
+0000010E  E28B                     136          LSR.L  #1,D3
+00000110  C63C 0007                137          AND.B  #$07,D3 ;
+00000114  B63C 0007                138          CMP.B  #$07, D3 
+00000118  6700 0116                139          BEQ    OP_CODE_JSR ;JSR
+0000011C                           140          
+0000011C  3604                     141          MOVE.W   D4, D3
+0000011E  EC8B                     142          LSR.L    #6, D3
+00000120  C63C 0007                143          AND.B  #$07,D3
+00000124  B63C 0007                144          CMP.B  #$07,D3
+00000128  6700 0120                145          BEQ    OP_CODE_LEA ;LEA
+0000012C                           146                  
+0000012C  4E75                     147          RTS 
+0000012E                           148  
+0000012E                           149  JUMP_7:
+0000012E                           150   *MOVEQ HAS NO SIZE, KEEP DATA REGISTER IN TRACK OF SIZES?
+0000012E  43F9 0000029A            151      LEA         MOVEQ_MSG, A1
+00000134  103C 000E                152      MOVE.B      #14, D0
+00000138  4E4F                     153      TRAP        #15
+Line 154 ERROR: Undefined symbol
+0000013A  6000 BBDA                154      BRA DONE
+0000013E                           155      
+0000013E                           156  JUMP_8:
+0000013E                           157  
+0000013E                           158  
+0000013E                           159  JUMP_9:
+0000013E  2611                     160      MOVE.L      (A1), D3
+00000140  EC8B                     161      LSR.L   #6,D3
+00000142  C63C 0003                162      AND.B   #$03,D3
+00000146  B63C 0003                163      CMP.B   #$3,D3
+0000014A  6700 FEB4                164      BEQ     INVALID_INSTR
+0000014E  3611                     165      MOVE.W  (A1),D3
+00000150  0803 0008                166      BTST    #8,D3 
+00000154  6600 FEAA                167      BNE     INVALID_INSTR
+00000158                           168  
+00000158                           169  
+00000158                           170  JUMP_B:
+00000158                           171  
+00000158                           172  
+00000158                           173  JUMP_C:
+00000158                           174  
+00000158                           175  
+00000158                           176  
+00000158                           177  JUMP_D:
+00000158  4283                     178      CLR.L       D3
+0000015A  3604                     179      MOVE.W      D4, D3
+0000015C  0803 0008                180      BTST     #8,D3 
+00000160  6700 00F4                181      BEQ      CHECK_FOR_ADDA
+00000164  4E75                     182      RTS
+00000166                           183          
+00000166                           184  ;.
+00000166                           185  ;.
+00000166                           186  ;.
+00000166                           187  ;.
+00000166                           188  ;.
+00000166                           189  ;.
+00000166                           190  ;.
+00000166                           191   
+00000166                           192  JUMP_E:
+00000166                           193  
+00000166  4E75                     194          RTS 
+00000168                           195           
+00000168                           196          
+00000168                           197          
+00000168                           198  
+00000168                           199          
+00000168                           200          ;LEA         ERROR_MSG, A1
+00000168                           201          ;MOVE.B      #14, D0    
+00000168                           202          ;TRAP        #15
+Line 203 ERROR: Undefined symbol
+00000168  6000 BBAC                203          BRA         DONE
+0000016C                           204  
+0000016C                           205  
+0000016C                           206  
+0000016C                           207  
+0000016C                           208          ;  Move valid sizes: 00, 11 10
+0000016C                           209          ;  MoveA valid sizes: 11, 10
+0000016C                           210          ; Code = 103C
+0000016C                           211  
+0000016C                           212  
+0000016C                           213  
+0000016C                           214  
+0000016C                           215  ; Functions to help isolate bits
+0000016C                           216  ; 0000 000X XX00 0000
+0000016C                           217  ; MOVE = 0011/0010 XXXY YYXX XXXX
+0000016C                           218  ; MOVEA = 0011/0010 XXX0 01XX XXXX
+0000016C                           219  ISOLATE_DESTM:
+0000016C  4283                     220          CLR.L       D3          
+0000016E  3604                     221          MOVE.W      D4,D3 ; D3 = YYYY YYYX XXYY YYYY
+00000170  EF4B                     222          LSL.W       #7,D3 ; Shift left 7 bits to 0 out those values  D3 = XXXY YYYY Y000 0000 
+00000172  123C 000D                223          MOVE.B      #13,D1
+00000176  E26B                     224          LSR.W       D1,D3 ; Shift right 13. 7 to compensate for previous shift and another 6 on top; XXXY YYYY Y000 0000  => 0000 0000 0000 0XXX
+00000178  4E75                     225          RTS 
+0000017A                           226  
+0000017A                           227  
+0000017A                           228  
+0000017A                           229  
+0000017A                           230          
+0000017A                           231          
+0000017A                           232          
+0000017A                           233  ; MOVE/MOVEA BLOCK ----------------------------------
+0000017A                           234  OP_CODE_BASE_MOVE:
+0000017A                           235          ; This should only execute for Move.B
+0000017A  43F9 00000275            236          LEA         MOVE_MSG, A1
+00000180  103C 000E                237          MOVE.B      #14, D0
+00000184  4E4F                     238          TRAP        #15
+00000186  43F9 000002D7            239          LEA         BYTE_MSG, A1
+0000018C  103C 000E                240          MOVE.B      #14, D0
+00000190  4E4F                     241          TRAP        #15
+00000192  4E75                     242          RTS         
+00000194                           243  
+00000194                           244  
+00000194                           245  ; first 4 bits = 0010 BLOCK --------------------    
+00000194                           246  J_MOVEA_L:
+00000194  43F9 0000027A            247      LEA         MOVEA_MSG, A1
+0000019A  103C 000E                248      MOVE.B      #14, D0
+0000019E  4E4F                     249      TRAP        #15
+000001A0  43F9 000002DD            250      LEA         LONG_MSG, A1
+000001A6  103C 000E                251      MOVE.B      #14, D0
+000001AA  4E4F                     252      TRAP        #15
+000001AC  4E75                     253      RTS    
+000001AE                           254  J_MOVE_L:
+000001AE  43F9 00000275            255      LEA         MOVE_MSG, A1
+000001B4  103C 000E                256      MOVE.B      #14, D0
+000001B8  4E4F                     257      TRAP        #15
+000001BA  43F9 000002DD            258      LEA         LONG_MSG, A1
+000001C0  103C 000E                259      MOVE.B      #14, D0
+000001C4  4E4F                     260      TRAP        #15
+000001C6  4E75                     261      RTS
+000001C8                           262  ; /BLOCK --------------------
+000001C8                           263  
+000001C8                           264  ; first 4 bits = 0011 BLOCK --------------------   
+000001C8                           265  
+000001C8                           266  J_MOVEA_W:
+000001C8  43F9 0000027A            267      LEA         MOVEA_MSG, A1
+000001CE  103C 000E                268      MOVE.B      #14, D0
+000001D2  4E4F                     269      TRAP        #15
+000001D4  43F9 000002DA            270      LEA         WORD_MSG, A1
+000001DA  103C 000E                271      MOVE.B      #14, D0
+000001DE  4E4F                     272      TRAP        #15
+000001E0  4E75                     273      RTS  
+000001E2                           274      
+000001E2                           275  J_MOVE_W:
+000001E2  43F9 00000275            276      LEA         MOVE_MSG, A1
+000001E8  103C 000E                277      MOVE.B      #14, D0
+000001EC  4E4F                     278      TRAP        #15
+000001EE  43F9 000002DA            279      LEA         WORD_MSG, A1
+000001F4  103C 000E                280      MOVE.B      #14, D0
+000001F8  4E4F                     281      TRAP        #15
+000001FA  4E75                     282      RTS  
+000001FC  4E75                     283      RTS
+000001FE                           284      
+000001FE                           285  ; /BLOCK --------------------
+000001FE                           286  
+000001FE                           287  
+000001FE                           288  ; END MOVE BLOCK ------------------------------
+000001FE                           289  
+000001FE                           290  *ADDQ - 0101, BScc, Scc
+000001FE                           291  *-------------------------------------------------------------        
+000001FE                           292  OP_CODE_ADDQ:
+000001FE                           293  
+000001FE  4283                     294          CLR.L       D3
+00000200  2604                     295          MOVE.L      D4, D3
+00000202  EC8B                     296          LSR.L       #6,D3
+00000204  C63C 0003                297          AND.B       #%011,D3
+00000208  B63C 0003                298          CMP.B       #%011,D3
+0000020C  6700 FDF2                299          BEQ         INVALID_INSTR
+00000210  43F9 00000270            300          LEA         ADDQ_MSG, A1
+00000216  103C 000E                301          MOVE.B      #14, D0
+0000021A  4E4F                     302          TRAP        #15
+0000021C                           303          ; DO EA AND CHECK FOR SIZES
+0000021C                           304  
+0000021C                           305  
+0000021C                           306  *NOP/JSR/LEA - 0100
+0000021C                           307  *-------------------------------------------------------------
+0000021C                           308  CHECK_FOR_MOVEM:
+0000021C  4283                     309          CLR.L       D3
+0000021E  2604                     310          MOVE.L      D4, D3
+00000220  0802 000B                311          BTST         #11,D2 ;
+Line 312 ERROR: Invalid syntax
+00000224                           312          BEQ          OP_CODE_MOVEM:;
+00000224                           313  
+00000224                           314  OP_CODE_NOP:
+00000224  43F9 00000284            315          LEA         NOP_MSG, A1
+0000022A  103C 000E                316          MOVE.B      #14, D0
+0000022E  4E4F                     317          TRAP        #15
+00000230                           318  
+00000230                           319  OP_CODE_JSR:
+00000230  4283                     320          CLR.L       D3
+00000232  3604                     321          MOVE.W      D4, D3
+00000234  E08B                     322          LSR.L  #8, D3 
+00000236  E28B                     323          LSR.L  #1,D3
+00000238  C63C 0007                324          AND.B  #$07,D3 ;
+0000023C  B63C 0007                325          CMP.B  #$07, D3 
+Line 326 ERROR: Undefined symbol
+00000240  43F9 004DBD16            326          LEA         JSR_MSG, A1
+00000246                           327          ;MOVE.B      #14, D0
+00000246                           328          ;TRAP        #15
+00000246                           329          *CAN WE HAVE A JMP AFTER TRAP?
+00000246  4EF8 021C                330          JMP CHECK_FOR_MOVEM 
+0000024A                           331          
+0000024A                           332  OP_CODE_LEA:
+0000024A  43F9 0000028E            333          LEA         LEA_MSG, A1
+00000250  103C 000E                334          MOVE.B      #14, D0
+00000254  4E4F                     335          TRAP        #15
+00000256                           336  
+00000256                           337  
+00000256                           338  
+00000256                           339  
+00000256                           340  *MOVEM - 0100
+00000256                           341  *-------------------------------------------------------------
+00000256                           342  OP_CODE_MOVEM:
+00000256                           343  
+00000256                           344  *CHECK FOR FURTHER VALIDATION
+00000256                           345  
+00000256                           346  
+00000256                           347  *BRA/BSR - 0110
+00000256                           348  *-------------------------------------------------------------
+00000256                           349  OP_CODE_:
+00000256                           350  
+00000256                           351  
+00000256                           352  
+00000256                           353  
+00000256                           354  *MOVEQ - 0111
+00000256                           355  *-------------------------------------------------------------
+00000256                           356  OP_CODE_MOVEQ:
+00000256                           357  
+00000256                           358  
+00000256                           359  
+00000256                           360  
+00000256                           361  
+00000256                           362  *MULU - 1100
+00000256                           363  *-------------------------------------------------------------
+00000256                           364  OP_CODE_MULUQ:
+00000256                           365  
+00000256                           366  
+00000256                           367  
+00000256                           368  
+00000256                           369  
+00000256                           370  *ADD/ADDA - 1101
+00000256                           371  *-------------------------------------------------------------
+00000256                           372  OP_CODE_ADD:
+00000256                           373  
+00000256                           374  CHECK_FOR_ADDA:
+00000256                           375      
+00000256                           376  OP_CODE_ADDA:
+00000256  EC4B                     377      LSR      #6, D3
+00000258  C63C 0007                378      AND.B    #$07, D3 ;
+0000025C  B63C 0003                379      CMP.B    #$03, D3 ; 011 OR 111 = ADDA
+00000260  43F9 000002B6            380      LEA         ADDA_MSG, A1
+00000266  B63C 0007                381      CMP.B    #$07, D3 
+0000026A  43F9 000002B6            382      LEA         ADDA_MSG, A1
+00000270                           383  
+00000270                           384  *ASL/ASR - 1110
+00000270                           385  *-------------------------------------------------------------
+00000270                           386  OP_CODE_ASD:
+00000270                           387  
+00000270                           388  
+00000270                           389  
+00000270                           390  
+00000270                           391  
+00000270                           392  
+00000270                           393  *DIVU - 1000
+00000270                           394  *-------------------------------------------------------------
+00000270                           395  OP_CODE_DIVU:
+00000270                           396  
+00000270                           397  
+00000270                           398  
+00000270                           399  
+00000270                           400  
+00000270                           401  
+00000270                           402  *SUB - 1001
+00000270                           403  *-------------------------------------------------------------
+00000270                           404  OP_CODE_SUB:
+00000270                           405  
+00000270                           406  
+00000270                           407  
+00000270                           408  
+00000270                           409  
+00000270                           410  
+00000270                           411  *CMP - 1011
+00000270                           412  *-------------------------------------------------------------
+00000270                           413  OP_CODE_CMP:
+00000270                           414  
+00000270                           415  
+00000270                           416  
+00000270                           417  
+00000270                           418  
+00000270                           419  
+00000270                           420  
+00000270                           421  
+00000270                           422  
+00000270= 41 44 44 51 00           423  ADDQ_MSG:       DC.B        'ADDQ',0
+00000275= 4D 4F 56 45 00           424  MOVE_MSG:       DC.B        'MOVE',0
+0000027A= 4D 4F 56 45 41 00        425  MOVEA_MSG:       DC.B        'MOVEA',0
+00000280= 4F 52 49 00              426  ORI_MSG:       DC.B        'ORI',0
+00000284= 4E 4F 50 00              427  NOP_MSG:       DC.B        'NOP',0
+00000288= 4D 4F 56 45 4D 00        428  MOVEM_MSG:       DC.B        'MOVEM',0
+0000028E= 4C 45 41 00              429  LEA_MSG:       DC.B        'LEA',0
+00000292= 42 52 41 00              430  BRA_MSG:       DC.B        'BRA',0
+00000296= 42 53 52 00              431  BSR_MSG:       DC.B        'BSR',0
+0000029A= 4D 4F 56 45 51 00        432  MOVEQ_MSG:       DC.B        'MOVEQ',0
+000002A0= 44 49 56 55 00           433  DIVU_MSG:       DC.B        'DIVU',0
+000002A5= 53 55 42 00              434  SUB_MSG:       DC.B        'SUB',0
+000002A9= 43 4D 50 00              435  CMP_MSG:       DC.B        'CMP',0
+000002AD= 4D 55 4C 55 00           436  MULU_MSG:       DC.B        'MULU',0
+000002B2= 41 44 44 00              437  ADD_MSG:       DC.B        'ADD',0
+000002B6= 41 44 44 41 00           438  ADDA_MSG:       DC.B        'ADDA',0
+000002BB= 41 53 4C 00              439  ASL_MSG:       DC.B        'ASL',0
+000002BF= 41 53 52 00              440  ASR_MSG:       DC.B        'ASR',0
+000002C3                           441  
+000002C3= 49 4E 56 41 4C 49 ...    442  ERROR_INSTR:    DC.B  'INVALID INSTRUCTION',0
+000002D7                           443  ; Size messages
+000002D7                           444  
+000002D7= 2E 42 00                 445  BYTE_MSG:       DC.B        '.B',0
+000002DA= 2E 57 00                 446  WORD_MSG:       DC.B        '.W',0
+000002DD= 2E 4C 00                 447  LONG_MSG:       DC.B        '.L',0
+000002E0                           448  
+Line 449 WARNING: END directive missing, starting address not set
 
-No errors detected
+14 errors detected
 1 warning generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-JMP_TBL             4
+ADDA_MSG            2B6
+ADDQ_MSG            270
+ADD_MSG             2B2
+ASL_MSG             2BB
+ASR_MSG             2BF
+BRA_MSG             292
+BSR_MSG             296
+BYTE_MSG            2D7
+CHECK_FOR_ADDA      256
+CHECK_FOR_MOVEM     21C
+CMP_MSG             2A9
+DIVU_MSG            2A0
+ERROR_INSTR         2C3
+INVALID_INSTR       0
+ISOLATE_DESTM       16C
+JUMP_0              8C
+JUMP_1              8E
+JUMP_2              A4
+JUMP_3              CA
+JUMP_4              EC
+JUMP_5              EE
+JUMP_6              FC
+JUMP_7              12E
+JUMP_8              13E
+JUMP_9              13E
+JUMP_B              158
+JUMP_C              158
+JUMP_D              158
+JUMP_E              166
+JUMP_OP_CODE        10
+J_MOVEA_L           194
+J_MOVEA_W           1C8
+J_MOVE_L            1AE
+J_MOVE_W            1E2
+LEA_MSG             28E
+LONG_MSG            2DD
+MOVEA_MSG           27A
+MOVEM_MSG           288
+MOVEQ_MSG           29A
+MOVE_MSG            275
+MULU_MSG            2AD
+NOP_MSG             284
+OP_CODE_            256
+OP_CODE_ADD         256
+OP_CODE_ADDA        256
+OP_CODE_ADDQ        1FE
+OP_CODE_ASD         270
+OP_CODE_BASE_MOVE   17A
+OP_CODE_CMP         270
+OP_CODE_DIVU        270
+OP_CODE_JSR         230
+OP_CODE_LEA         24A
+OP_CODE_MOVEM       256
+OP_CODE_MOVEQ       256
+OP_CODE_MULUQ       256
+OP_CODE_NOP         224
+OP_CODE_SUB         270
+ORI_MSG             280
+PRINT_BYTE          0
+PRINT_WORD          0
+SUB_MSG             2A5
+WORD_MSG            2DA
