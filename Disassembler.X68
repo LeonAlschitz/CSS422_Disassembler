@@ -277,19 +277,16 @@ FILE_LOOP:
         ;       If our pointer is at the end, BRA to DONE
         
         
-        BEQ         DONE
-        
+        BEQ         DONE       
         BRA         FILE_LOOP
 
 
 
 
 
-DONE:
-
-        
-        MOVE.B  #9, D0
-        TRAP    #15
+DONE:   
+        MOVE.B      #9, D0
+        TRAP        #15
         
         
         
@@ -314,12 +311,12 @@ SIX_MSG:        DC.B        '6',0
 SEVEN_MSG:      DC.B        '7',0
 EIGHT_MSG:      DC.B        '8',0
 NINE_MSG:       DC.B        '9',0
-A_MSG:       DC.B        'A',0
-B_MSG:       DC.B        'B',0
-C_MSG:       DC.B        'C',0
-D_MSG:       DC.B        'D',0
-E_MSG:       DC.B        'E',0
-F_MSG:       DC.B        'F',0
+A_MSG:          DC.B        'A',0
+B_MSG:          DC.B        'B',0
+C_MSG:          DC.B        'C',0
+D_MSG:          DC.B        'D',0
+E_MSG:          DC.B        'E',0
+F_MSG:          DC.B        'F',0
                 
 ERROR_MSG:      DC.B        'Error',0
 SUCCESS_MSG:    DC.B        'Success',0

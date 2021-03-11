@@ -179,7 +179,6 @@ J_MOVE_W:
     MOVE.B      #14, D0
     TRAP        #15
     RTS  
-    RTS
     
 ; /BLOCK --------------------
 
