@@ -9,7 +9,7 @@
     
 ; A3 will store starting address
 ; A4 will store ending address
-; D3 is used to store values that will get compared
+; D0 is used to store values that will get compared
     
 START:
 
@@ -59,31 +59,35 @@ START:
 
 
 CONVERT_ASCII:                  ; Convert Ascii values to Hex. 00011111 00011110 00100001 00101011 = 31 30 33 43. 31 30 33 43 => 0001 0000 0011 1100 = 1 0 3 C
-
+        
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
         BEQ         ASCII_DONE
     
         MOVE.B      (A1)+, D2   ; Gives D2 the next Byte from A1
-    
-        MOVE.B      #$39, D3    ; Moves 39 into D3, Ascii Characters after 39 are not letters
-        CMP.B       D3, D2
+        
 
+    
+        MOVE.B      #$39, D0    ; Moves 39 into D3, Ascii Characters after 39 are not letters
+        CMP.B       D0, D2
+        
+        ; SIMHALT
         BLE         NUM_ASCII   ; data in D2 is less than 39, Most likely a number
         BRA         LET_ASCII   ; If not a number, then it is an ASCII Letter
 
 ASCII_DONE:
         RTS
 
+
 NUM_ASCII:
         SUBI.B      #$1, D1
         
-        MOVE.B      #$30, D3
-        SUB.B       D3, D2      ; ASCII numbers start at 30. 30 = 0, 31 = 1, etc
+        MOVE.B      #$30, D0
+        SUB.B       D0, D2      ; ASCII numbers start at 30. 30 = 0, 31 = 1, etc
         ADD.B       D2, D4      ; new ASCII number stored at D4
         
+
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
         BEQ         ASCII_DONE
-        
         
         ASL.L       #4, D4
       
@@ -94,8 +98,8 @@ LET_ASCII:
         SUBI.B      #$1, D1
                
 
-        MOVE.B      #$37, D3
-        SUB.B       D3, D2      ; Hex letters we care about are from A-F, we can use math do achieve this
+        MOVE.B      #$37, D0
+        SUB.B       D0, D2      ; Hex letters we care about are from A-F, we can use math do achieve this
         ADD.B       D2, D4      ; 41 is used to represent A in Hex. Hexadecimal subtraction: 41 - 37 = A
                                 ; 46 is used to represent F in Hex. 46 - 37 = F
         
@@ -108,11 +112,18 @@ LET_ASCII:
         BRA         CONVERT_ASCII
 
 PRINT_ADDRESS:
-        ;SIMHALT 0000 0000
+        ; SIMHALT 0000 0000
         CLR.L       D1
         MOVE.B      #$9, D1
         MOVE.L      A3, D3
         
+        
+        CLR.L       D2
+        
+        JSR         ADDRESS_FLIP_START
+        
+        CLR.L       D1
+        MOVE.B      #$9, D1
         BRA         PRINT_ADDRESS_LOOP
 
         LEA         SPACE_MSG, A1
@@ -120,14 +131,60 @@ PRINT_ADDRESS:
         TRAP        #15
         
         RTS
+        
+ADDRESS_FLIP_START:        
+        CLR.L       D1
+        MOVE.B      #$8, D1
+        
+        JSR         ADDRESS_FLIP_LOOP
+        MOVE.L      D2, D3
+        CLR.L       D2
+        
+        RTS
+        
+ADDRESS_FLIP_LOOP:
+        
+        CMPI.B      #$0, D1
+        BEQ         ADDRESS_FLIP_DONE
+        SUBI.B      #$1, D1
+        ASL.L       #4, D2
+        
+        CLR.L       D4
+        
+        MOVE.B      D3, D4
+        
+        ASL.L       #8, D4
+        ASL.L       #8, D4
+        ASL.L       #8, D4
+        ASL.L       #4, D4
+        
+        ASR.L       #4, D4
+        ASR.L       #8, D4
+        ASR.L       #8, D4
+        ASR.L       #8, D4
+        
+        ADD.B       D4, D2
+        
+        
+        ASR.L       #4, D3
+        
+        BRA         ADDRESS_FLIP_LOOP
+
+ADDRESS_FLIP_DONE:
+        RTS
+
+
+        
 
 PRINT_ADDRESS_LOOP:
+        SIMHALT
         CMPI.B      #$0, D1
         BEQ         PRINT_ADDRESS_EXIT
         SUBI.B      #$1, D1
         
         MOVE.B      D3, D2
         ASR.L       #4, D3
+        
         
         CMP.B       #0,D2
         BEQ         PRINT_ADR0
@@ -277,7 +334,8 @@ FILE_LOOP:
         ;       If our pointer is at the end, BRA to DONE
         
         
-        BEQ         DONE       
+        BEQ         DONE
+        BLE         DONE       
         BRA         FILE_LOOP
 
 
@@ -331,9 +389,14 @@ END_ADDR        DS.B        40
 
 
 
+
                 
                 
         END    START    
+
+
+
+
 
 
 
