@@ -1,6 +1,6 @@
 00000000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 3/11/2021 12:04:31 PM
+Created On: 3/12/2021 12:15:05 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -72,7 +72,7 @@ Created On: 3/11/2021 12:04:31 PM
 00000018  4EB9 0000004A             68          JSR         MODE_TABLE
 0000001E                            69          
 0000001E                            70          ; Print Out ", "
-0000001E  43F9 000001DC             71          LEA         SEPERATOR, A1
+0000001E  43F9 0000039C             71          LEA         SEPERATOR, A1
 00000024  103C 000E                 72          MOVE.B      #14, D0
 00000028  4E4F                      73          TRAP        #15
 0000002A                            74          
@@ -97,7 +97,7 @@ Created On: 3/11/2021 12:04:31 PM
 00000048                            93          
 00000048                            94          ; JSR EA_JUMP_TABLE
 00000048                            95          
-00000048                            96          ; Final output Format = MOVE.X D##, D##
+00000048                            96          ; Final output Format = 00001000 MOVE.X D##, D##
 00000048                            97      
 00000048  4E75                      98          RTS
 0000004A                            99      
@@ -128,7 +128,7 @@ Created On: 3/11/2021 12:04:31 PM
 0000007C                           124  
 0000007C                           125  
 0000007C                           126  J_TBL_D:
-0000007C  43F9 000001CC            127          LEA         MODE_0_MSG, A1 ; D#
+0000007C  43F9 0000038C            127          LEA         MODE_0_MSG, A1 ; D#
 00000082  103C 000E                128          MOVE.B      #14, D0
 00000086  4E4F                     129          TRAP        #15
 00000088  4EB9 000000F0            130          JSR         DISPLAY_REG
@@ -136,12 +136,12 @@ Created On: 3/11/2021 12:04:31 PM
 00000090                           132  
 00000090                           133  J_TBL_A:
 00000090                           134  
-00000090  43F9 000001D0            135          LEA         MODE_A_MSG, A1 ; (A#)
+00000090  43F9 00000390            135          LEA         MODE_A_MSG, A1 ; (A#)
 00000096  103C 000E                136          MOVE.B      #14, D0
 0000009A  4E4F                     137          TRAP        #15
 0000009C  4EB9 000000F0            138          JSR         DISPLAY_REG
 000000A2                           139          
-000000A2  43F9 000001D3            140          LEA         MODE_A_1_MSG, A1
+000000A2  43F9 00000393            140          LEA         MODE_A_1_MSG, A1
 000000A8  103C 000E                141          MOVE.B      #14, D0
 000000AC  4E4F                     142          TRAP        #15
 000000AE                           143  
@@ -149,24 +149,24 @@ Created On: 3/11/2021 12:04:31 PM
 000000AE  4E75                     145          RTS
 000000B0                           146      
 000000B0                           147  J_TBL_A_INCR:
-000000B0  43F9 000001D0            148          LEA         MODE_A_MSG, A1 ; (A#)+
+000000B0  43F9 00000390            148          LEA         MODE_A_MSG, A1 ; (A#)+
 000000B6  103C 000E                149          MOVE.B      #14, D0
 000000BA  4E4F                     150          TRAP        #15
 000000BC  4EB9 000000F0            151          JSR         DISPLAY_REG
 000000C2                           152          
-000000C2  43F9 000001D5            153          LEA         MODE_A_2_MSG, A1
+000000C2  43F9 00000395            153          LEA         MODE_A_2_MSG, A1
 000000C8  103C 000E                154          MOVE.B      #14, D0
 000000CC  4E4F                     155          TRAP        #15
 000000CE                           156  
 000000CE  4E75                     157          RTS
 000000D0                           158          
 000000D0                           159  J_TBL_A_DECR:
-000000D0  43F9 000001D8            160          LEA         MODE_MINUS_MSG, A1 ; -(A#)
+000000D0  43F9 00000398            160          LEA         MODE_MINUS_MSG, A1 ; -(A#)
 000000D6  103C 000E                161          MOVE.B      #14, D0
 000000DA  4E4F                     162          TRAP        #15
 000000DC  4EB9 000000F0            163          JSR         DISPLAY_REG
 000000E2                           164          
-000000E2  43F9 000001D3            165          LEA         MODE_A_1_MSG, A1
+000000E2  43F9 00000393            165          LEA         MODE_A_1_MSG, A1
 000000E8  103C 000E                166          MOVE.B      #14, D0
 000000EC  4E4F                     167          TRAP        #15
 000000EE                           168  
@@ -197,7 +197,7 @@ Created On: 3/11/2021 12:04:31 PM
 00000114                           193  ;   Word
 00000114                           194  J_ABS_W:
 00000114  FFFF FFFF                195          SIMHALT
-00000118  43F9 000001E1            196          LEA         DOLLAR_MSG, A1
+00000118  43F9 000003A1            196          LEA         DOLLAR_MSG, A1
 0000011E  103C 000E                197          MOVE.B      #14, D0
 00000122  4E4F                     198          TRAP        #15
 00000124                           199         
@@ -235,7 +235,7 @@ Line 209 ERROR: Undefined symbol
 00000144                           230  ;   Size num 0,4 = Byte 1,5 = Word 2,6 Long
 00000144                           231  
 00000144                           232  DATA_TABLE:
-00000144  43F9 000001E3            233          LEA         DATA_MSG, A1
+00000144  43F9 000003A3            233          LEA         DATA_MSG, A1
 0000014A  103C 000E                234          MOVE.B      #14, D0
 0000014E  4E4F                     235          TRAP        #15
 00000150                           236  
@@ -246,123 +246,289 @@ Line 209 ERROR: Undefined symbol
 0000015C  6700 0024                241          BEQ         DATA_B
 00000160                           242  
 00000160  B63C 0001                243          CMP.B       #1,D3 
-00000164  6700 0034                244          BEQ         DATA_W      
+00000164  6700 0042                244          BEQ         DATA_W      
 00000168  B63C 0005                245          CMP.B       #5,D3
-0000016C  6700 002C                246          BEQ         DATA_W
+0000016C  6700 003A                246          BEQ         DATA_W
 00000170                           247          
 00000170  B63C 0002                248          CMP.B       #2,D3 
-00000174  6700 003C                249          BEQ         DATA_L      
+00000174  6700 0056                249          BEQ         DATA_L      
 00000178  B63C 0006                250          CMP.B       #6,D3
-0000017C  6700 0034                251          BEQ         DATA_L
-00000180                           252  
-00000180                           253  
-00000180                           254  
-00000180                           255  
-00000180  4E75                     256          RTS
-00000182                           257  
-00000182                           258  DATA_B:
-00000182                           259  
-00000182  325B                     260          MOVE.W      (A3)+, A1
-00000184                           261          * Only read first byte from the word        
-00000184                           262  
-00000184  4281                     263          CLR.L       D1
-00000186  4282                     264          CLR.L       D2
-00000188  4284                     265          CLR.L       D4
-0000018A                           266          
-0000018A  FFFF FFFF                267          SIMHALT
-0000018E  123C 0002                268          MOVE.B      #2, D1
-Line 269 ERROR: Undefined symbol
-00000192  4EB9 004DBD16            269          JSR         CONVERT_ASCII
-00000198                           270  
-00000198                           271  
-00000198                           272  
-00000198  4E75                     273          RTS
-0000019A                           274  
-0000019A                           275  DATA_W:
-0000019A                           276  
-0000019A  325B                     277          MOVE.W      (A3)+, A1
-0000019C                           278  
-0000019C  4281                     279          CLR.L       D1
-0000019E  4282                     280          CLR.L       D2
-000001A0  4284                     281          CLR.L       D4
-000001A2                           282          
-000001A2                           283          
-000001A2  123C 0004                284          MOVE.B      #4, D1
-000001A6  FFFF FFFF                285          SIMHALT
-Line 286 ERROR: Undefined symbol
-000001AA  4EB9 004DBD16            286          JSR         CONVERT_ASCII
-000001B0                           287  
-000001B0                           288          
-000001B0                           289  
-000001B0  4E75                     290          RTS
-000001B2                           291  
-000001B2                           292  DATA_L:
-000001B2                           293          
-000001B2  225B                     294          MOVE.L      (A3)+, A1
-000001B4                           295  
-000001B4  4281                     296          CLR.L       D1
-000001B6  4282                     297          CLR.L       D2
-000001B8  4284                     298          CLR.L       D4
-000001BA                           299          
-000001BA  FFFF FFFF                300          SIMHALT
-000001BE  123C 0008                301          MOVE.B      #8, D1
-Line 302 ERROR: Undefined symbol
-000001C2  4EB9 004DBD16            302          JSR         CONVERT_ASCII
-000001C8                           303  
-000001C8                           304          
-000001C8                           305  
-000001C8  4E75                     306          RTS
-000001CA                           307  
-000001CA  4E75                     308          RTS
-000001CC                           309  
-000001CC                           310  
-000001CC                           311  
-000001CC                           312  
-000001CC                           313  
-000001CC                           314  
-000001CC                           315  
-000001CC                           316  
-000001CC                           317  
-000001CC                           318  
-000001CC                           319  
-000001CC= 44 00                    320  MODE_0_MSG:     DC.B        'D',0
-000001CE= 41 00                    321  MODE_1_MSG:     DC.B        'A',0
-000001D0= 28 41 00                 322  MODE_A_MSG:     DC.B        '(A',0
-000001D3= 29 00                    323  MODE_A_1_MSG:   DC.B        ')',0
-000001D5= 29 2B 00                 324  MODE_A_2_MSG:   DC.B        ')+',0
-000001D8= 2D 28 41 00              325  MODE_MINUS_MSG: DC.B        '-(A',0
-000001DC                           326  
-000001DC= 2C 20 00                 327  SEPERATOR:      DC.B        ', ',0
-000001DF                           328  
-000001DF= 23 00                    329  POUND_MSG:      DC.B        '#',0
-000001E1= 24 00                    330  DOLLAR_MSG:     DC.B        '$',0
-000001E3= 20 23 24 00              331  DATA_MSG:       DC.B        ' #$',0
-000001E7                           332  
-000001E7= 54 4D 50 00              333  TEMP_MSG:       DC.B        'TMP',0
-000001EB                           334  
-000001EB                           335  
-000001EB                           336  
-000001EB                           337  TMP_STR         DS.B        32
-0000020B                           338  
-0000020B                           339  
-0000020B                           340  
-Line 341 WARNING: END directive missing, starting address not set
+0000017C  6700 004E                251          BEQ         DATA_L
+00000180                           252          
+00000180  4E75                     253          RTS
+00000182                           254  
+00000182                           255  DATA_B:
+00000182  4281                     256          CLR.L       D1
+00000184  4282                     257          CLR.L       D2
+00000186  4284                     258          CLR.L       D4
+00000188  4287                     259          CLR.L       D7
+0000018A                           260          
+0000018A  341B                     261          MOVE.W      (A3)+, D2
+0000018C                           262          * Only read first byte from the word 
+0000018C                           263          
+Line 264 ERROR: Undefined symbol
+0000018C  4EB9 004DBD16            264          JSR         FLIP_START
+00000192  4847                     265          SWAP        D7
+00000194  E09F                     266          ROR.L       #8,D7
+00000196  4282                     267          CLR.L       D2
+00000198                           268          
+00000198  FFFF FFFF                269          SIMHALT
+0000019C  123C 0002                270          MOVE.B      #2, D1
+000001A0  4EB9 000001EE            271          JSR         CONVERT_HEX
+000001A6                           272  
+000001A6                           273  
+000001A6                           274  
+000001A6  4E75                     275          RTS
+000001A8                           276  
+000001A8                           277  DATA_W:
+000001A8  4281                     278          CLR.L       D1
+000001AA  4282                     279          CLR.L       D2
+000001AC  4284                     280          CLR.L       D4
+000001AE  4287                     281          CLR.L       D7
+000001B0                           282          
+000001B0  341B                     283          MOVE.W      (A3)+, D2
+000001B2                           284          
+Line 285 ERROR: Undefined symbol
+000001B2  4EB9 004DBD16            285          JSR         FLIP_START
+000001B8  FFFF FFFF                286          SIMHALT
+000001BC  4847                     287          SWAP        D7
+000001BE                           288  
+000001BE  4282                     289          CLR.L       D2
+000001C0                           290          
+000001C0  123C 0004                291          MOVE.B      #4, D1
+000001C4                           292          
+000001C4                           293          
+000001C4  4EB9 000001EE            294          JSR         CONVERT_HEX
+000001CA                           295  
+000001CA                           296          
+000001CA                           297  
+000001CA  4E75                     298          RTS
+000001CC                           299  
+000001CC                           300  DATA_L:
+000001CC  4281                     301          CLR.L       D1
+000001CE  4282                     302          CLR.L       D2
+000001D0  4284                     303          CLR.L       D4
+000001D2  4287                     304          CLR.L       D7
+000001D4                           305          
+000001D4  241B                     306          MOVE.L      (A3)+, D2
+000001D6                           307          
+Line 308 ERROR: Undefined symbol
+000001D6  4EB9 004DBD16            308          JSR         FLIP_START
+000001DC                           309  
+000001DC  4282                     310          CLR.L       D2
+000001DE                           311          
+000001DE  FFFF FFFF                312          SIMHALT
+000001E2  123C 0008                313          MOVE.B      #8, D1
+000001E6  4EB9 000001EE            314          JSR         CONVERT_HEX
+000001EC                           315  
+000001EC                           316          
+000001EC                           317  
+000001EC  4E75                     318          RTS
+000001EE                           319  
+000001EE                           320  
+000001EE                           321  CONVERT_HEX:
+000001EE  FFFF FFFF                322          SIMHALT    
+000001F2  0C01 0000                323          CMPI.B      #$0, D1    
+000001F6  6700 0092                324          BEQ         HEX_DONE
+000001FA                           325          
+000001FA  5301                     326          SUBI.B      #$1, D1       
+000001FC                           327  
+000001FC  4282                     328          CLR.L       D2
+000001FE                           329      
+000001FE  1407                     330          MOVE.B      D7,D2
+00000200                           331              
+00000200  103C 001C                332          MOVE.B      #28,D0    
+00000204  E1AA                     333          LSL.L       D0,D2     
+00000206  E99A                     334          ROL.L       #4,D2
+00000208                           335          
+00000208  E887                     336          ASR.L       #4, D7
+0000020A                           337          
+0000020A                           338          
+0000020A  B43C 0000                339          CMP.B       #0,D2
+0000020E  6700 007C                340          BEQ         PRINT_ASCII0
+00000212  B43C 0001                341          CMP.B       #1,D2
+00000216  6700 0084                342          BEQ         PRINT_ASCII1
+0000021A  B43C 0002                343          CMP.B       #2,D2
+0000021E  6700 008C                344          BEQ         PRINT_ASCII2
+00000222  B43C 0003                345          CMP.B       #3,D2
+00000226  6700 0094                346          BEQ         PRINT_ASCII3
+0000022A  B43C 0004                347          CMP.B       #4,D2
+0000022E  6700 009C                348          BEQ         PRINT_ASCII4
+00000232  B43C 0005                349          CMP.B       #5,D2
+00000236  6700 00A4                350          BEQ         PRINT_ASCII5
+0000023A  B43C 0006                351          CMP.B       #6,D2
+0000023E  6700 00AC                352          BEQ         PRINT_ASCII6
+00000242  B43C 0007                353          CMP.B       #7,D2
+00000246  6700 00B4                354          BEQ         PRINT_ASCII7
+0000024A  B43C 0008                355          CMP.B       #8,D2
+0000024E  6700 00BC                356          BEQ         PRINT_ASCII8
+00000252  B43C 0009                357          CMP.B       #9,D2
+00000256  6700 00C4                358          BEQ         PRINT_ASCII9
+0000025A  B43C 000A                359          CMP.B       #$A,D2
+0000025E  6700 00CC                360          BEQ         PRINT_ASCIIA
+00000262  B43C 000B                361          CMP.B       #$B,D2
+00000266  6700 00D4                362          BEQ         PRINT_ASCIIB
+0000026A  B43C 000C                363          CMP.B       #$C,D2
+0000026E  6700 00DC                364          BEQ         PRINT_ASCIIC
+00000272  B43C 000D                365          CMP.B       #$D,D2
+00000276  6700 00E4                366          BEQ         PRINT_ASCIID
+0000027A  B43C 000E                367          CMP.B       #$E,D2
+0000027E  6700 00EC                368          BEQ         PRINT_ASCIIE
+00000282  B43C 000F                369          CMP.B       #$F,D2
+00000286  6700 00F4                370          BEQ         PRINT_ASCIIF
+0000028A                           371          
+0000028A                           372          ; error handling here
+0000028A                           373          
+0000028A                           374          
+0000028A                           375  
+0000028A                           376  HEX_DONE:
+0000028A  4E75                     377          RTS
+0000028C                           378  
+0000028C                           379  
+0000028C                           380  
+0000028C                           381  PRINT_ASCII0:
+Line 382 ERROR: Undefined symbol
+0000028C  43F9 004DBD16            382          LEA         ZERO_MSG, A1
+00000292  103C 000E                383          MOVE.B      #14, D0    
+00000296  4E4F                     384          TRAP        #15
+00000298  6000 FF54                385          BRA         CONVERT_HEX
+0000029C                           386  PRINT_ASCII1:
+Line 387 ERROR: Undefined symbol
+0000029C  43F9 004DBD16            387          LEA         ONE_MSG, A1
+000002A2  103C 000E                388          MOVE.B      #14, D0    
+000002A6  4E4F                     389          TRAP        #15
+000002A8  6000 FF44                390          BRA         CONVERT_HEX
+000002AC                           391  PRINT_ASCII2:
+Line 392 ERROR: Undefined symbol
+000002AC  43F9 004DBD16            392          LEA         TWO_MSG, A1
+000002B2  103C 000E                393          MOVE.B      #14, D0    
+000002B6  4E4F                     394          TRAP        #15
+000002B8  6000 FF34                395          BRA         CONVERT_HEX
+000002BC                           396  PRINT_ASCII3:
+Line 397 ERROR: Undefined symbol
+000002BC  43F9 004DBD16            397          LEA         THREE_MSG, A1
+000002C2  103C 000E                398          MOVE.B      #14, D0    
+000002C6  4E4F                     399          TRAP        #15
+000002C8  6000 FF24                400          BRA         CONVERT_HEX
+000002CC                           401  PRINT_ASCII4:
+Line 402 ERROR: Undefined symbol
+000002CC  43F9 004DBD16            402          LEA         FOUR_MSG, A1
+000002D2  103C 000E                403          MOVE.B      #14, D0    
+000002D6  4E4F                     404          TRAP        #15
+000002D8  6000 FF14                405          BRA         CONVERT_HEX
+000002DC                           406  PRINT_ASCII5:
+Line 407 ERROR: Undefined symbol
+000002DC  43F9 004DBD16            407          LEA         FIVE_MSG, A1
+000002E2  103C 000E                408          MOVE.B      #14, D0    
+000002E6  4E4F                     409          TRAP        #15
+000002E8  6000 FF04                410          BRA         CONVERT_HEX        
+000002EC                           411  PRINT_ASCII6:
+Line 412 ERROR: Undefined symbol
+000002EC  43F9 004DBD16            412          LEA         SIX_MSG, A1
+000002F2  103C 000E                413          MOVE.B      #14, D0    
+000002F6  4E4F                     414          TRAP        #15
+000002F8  6000 FEF4                415          BRA         CONVERT_HEX
+000002FC                           416  PRINT_ASCII7:
+Line 417 ERROR: Undefined symbol
+000002FC  43F9 004DBD16            417          LEA         SEVEN_MSG, A1
+00000302  103C 000E                418          MOVE.B      #14, D0    
+00000306  4E4F                     419          TRAP        #15
+00000308  6000 FEE4                420          BRA         CONVERT_HEX
+0000030C                           421  PRINT_ASCII8:
+Line 422 ERROR: Undefined symbol
+0000030C  43F9 004DBD16            422          LEA         EIGHT_MSG, A1
+00000312  103C 000E                423          MOVE.B      #14, D0    
+00000316  4E4F                     424          TRAP        #15
+00000318  6000 FED4                425          BRA         CONVERT_HEX
+0000031C                           426  PRINT_ASCII9:
+Line 427 ERROR: Undefined symbol
+0000031C  43F9 004DBD16            427          LEA         NINE_MSG, A1
+00000322  103C 000E                428          MOVE.B      #14, D0    
+00000326  4E4F                     429          TRAP        #15
+00000328  6000 FEC4                430          BRA         CONVERT_HEX
+0000032C                           431  PRINT_ASCIIA:
+Line 432 ERROR: Undefined symbol
+0000032C  43F9 004DBD16            432          LEA         A_MSG, A1
+00000332  103C 000E                433          MOVE.B      #14, D0    
+00000336  4E4F                     434          TRAP        #15
+00000338  6000 FEB4                435          BRA         CONVERT_HEX
+0000033C                           436  PRINT_ASCIIB:
+Line 437 ERROR: Undefined symbol
+0000033C  43F9 004DBD16            437          LEA         B_MSG, A1
+00000342  103C 000E                438          MOVE.B      #14, D0    
+00000346  4E4F                     439          TRAP        #15
+00000348  6000 FEA4                440          BRA         CONVERT_HEX
+0000034C                           441  PRINT_ASCIIC:
+Line 442 ERROR: Undefined symbol
+0000034C  43F9 004DBD16            442          LEA         C_MSG, A1
+00000352  103C 000E                443          MOVE.B      #14, D0    
+00000356  4E4F                     444          TRAP        #15
+00000358  6000 FE94                445          BRA         CONVERT_HEX
+0000035C                           446  PRINT_ASCIID:
+Line 447 ERROR: Undefined symbol
+0000035C  43F9 004DBD16            447          LEA         D_MSG, A1
+00000362  103C 000E                448          MOVE.B      #14, D0    
+00000366  4E4F                     449          TRAP        #15
+00000368  6000 FE84                450          BRA         CONVERT_HEX
+0000036C                           451  PRINT_ASCIIE:
+Line 452 ERROR: Undefined symbol
+0000036C  43F9 004DBD16            452          LEA         E_MSG, A1
+00000372  103C 000E                453          MOVE.B      #14, D0    
+00000376  4E4F                     454          TRAP        #15
+00000378  6000 FE74                455          BRA         CONVERT_HEX
+0000037C                           456  PRINT_ASCIIF:
+Line 457 ERROR: Undefined symbol
+0000037C  43F9 004DBD16            457          LEA         F_MSG, A1
+00000382  103C 000E                458          MOVE.B      #14, D0    
+00000386  4E4F                     459          TRAP        #15
+00000388  6000 FE64                460          BRA         CONVERT_HEX
+0000038C                           461  
+0000038C                           462  
+0000038C                           463  
+0000038C                           464  
+0000038C                           465  
+0000038C                           466  
+0000038C                           467  
+0000038C= 44 00                    468  MODE_0_MSG:     DC.B        'D',0
+0000038E= 41 00                    469  MODE_1_MSG:     DC.B        'A',0
+00000390= 28 41 00                 470  MODE_A_MSG:     DC.B        '(A',0
+00000393= 29 00                    471  MODE_A_1_MSG:   DC.B        ')',0
+00000395= 29 2B 00                 472  MODE_A_2_MSG:   DC.B        ')+',0
+00000398= 2D 28 41 00              473  MODE_MINUS_MSG: DC.B        '-(A',0
+0000039C                           474  
+0000039C= 2C 20 00                 475  SEPERATOR:      DC.B        ', ',0
+0000039F                           476  
+0000039F= 23 00                    477  POUND_MSG:      DC.B        '#',0
+000003A1= 24 00                    478  DOLLAR_MSG:     DC.B        '$',0
+000003A3= 20 23 24 00              479  DATA_MSG:       DC.B        ' #$',0
+000003A7                           480  
+000003A7= 54 4D 50 00              481  TEMP_MSG:       DC.B        'TMP',0
+000003AB                           482  
+000003AB                           483  
+000003AB                           484  
+000003AB                           485  TMP_STR         DS.B        32
+000003CB                           486  
+000003CB                           487  
+000003CB                           488  
+Line 489 WARNING: END directive missing, starting address not set
 
-4 errors detected
+20 errors detected
 1 warning generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
+CONVERT_HEX         1EE
 DATA_B              182
-DATA_L              1B2
-DATA_MSG            1E3
+DATA_L              1CC
+DATA_MSG            3A3
 DATA_TABLE          144
-DATA_W              19A
+DATA_W              1A8
 DISPLAY_REG         F0
-DOLLAR_MSG          1E1
+DOLLAR_MSG          3A1
 EA_MOVE             0
+HEX_DONE            28A
 J_ABS               74
 J_ABS_ERROR         142
 J_ABS_L             140
@@ -372,14 +538,30 @@ J_TBL_A             90
 J_TBL_A_DECR        D0
 J_TBL_A_INCR        B0
 J_TBL_D             7C
-MODE_0_MSG          1CC
-MODE_1_MSG          1CE
-MODE_A_1_MSG        1D3
-MODE_A_2_MSG        1D5
-MODE_A_MSG          1D0
-MODE_MINUS_MSG      1D8
+MODE_0_MSG          38C
+MODE_1_MSG          38E
+MODE_A_1_MSG        393
+MODE_A_2_MSG        395
+MODE_A_MSG          390
+MODE_MINUS_MSG      398
 MODE_TABLE          4A
-POUND_MSG           1DF
-SEPERATOR           1DC
-TEMP_MSG            1E7
-TMP_STR             1EB
+POUND_MSG           39F
+PRINT_ASCII0        28C
+PRINT_ASCII1        29C
+PRINT_ASCII2        2AC
+PRINT_ASCII3        2BC
+PRINT_ASCII4        2CC
+PRINT_ASCII5        2DC
+PRINT_ASCII6        2EC
+PRINT_ASCII7        2FC
+PRINT_ASCII8        30C
+PRINT_ASCII9        31C
+PRINT_ASCIIA        32C
+PRINT_ASCIIB        33C
+PRINT_ASCIIC        34C
+PRINT_ASCIID        35C
+PRINT_ASCIIE        36C
+PRINT_ASCIIF        37C
+SEPERATOR           39C
+TEMP_MSG            3A7
+TMP_STR             3AB

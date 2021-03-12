@@ -138,6 +138,9 @@ OP_CODE_BASE_MOVE:
         LEA         BYTE_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
+        
+        MOVE.B      #0, D3
+        
         RTS         
 
 
@@ -203,6 +206,7 @@ MOVEA_MSG:       DC.B        'MOVEA',0
 BYTE_MSG:       DC.B        '.B',0
 WORD_MSG:       DC.B        '.W',0
 LONG_MSG:       DC.B        '.L',0
+
 
 
 

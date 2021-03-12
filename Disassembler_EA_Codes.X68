@@ -93,7 +93,7 @@ EA_MOVE:
         
         ; JSR EA_JUMP_TABLE
         
-        ; Final output Format = MOVE.X D##, D##
+        ; Final output Format = 00001000 MOVE.X D##, D##
     
         RTS
     
@@ -249,67 +249,215 @@ DATA_TABLE:
         BEQ         DATA_L      
         CMP.B       #6,D3
         BEQ         DATA_L
-
-
-
-
+        
         RTS
 
 DATA_B:
-
-        MOVE.W      (A3)+, A1
-        * Only read first byte from the word        
-
         CLR.L       D1
         CLR.L       D2
         CLR.L       D4
+        CLR.L       D7
         
-        SIMHALT
+        MOVE.W      (A3)+, D2
+        * Only read first byte from the word 
+        
+        JSR         FLIP_START
+        SWAP        D7
+        ROR.L       #8,D7
+        CLR.L       D2
+        
+
         MOVE.B      #2, D1
-        JSR         CONVERT_ASCII
+        JSR         CONVERT_HEX
 
 
 
         RTS
 
 DATA_W:
-
-        MOVE.W      (A3)+, A1
-
         CLR.L       D1
         CLR.L       D2
         CLR.L       D4
+        CLR.L       D7
         
+        MOVE.W      (A3)+, D2
+        
+        JSR         FLIP_START
+
+        SWAP        D7
+
+        CLR.L       D2
         
         MOVE.B      #4, D1
-        SIMHALT
-        JSR         CONVERT_ASCII
+        
+        
+        JSR         CONVERT_HEX
 
         
 
         RTS
 
 DATA_L:
-        
-        MOVE.L      (A3)+, A1
-
         CLR.L       D1
         CLR.L       D2
         CLR.L       D4
+        CLR.L       D7
         
-        SIMHALT
+        MOVE.L      (A3)+, D2
+        
+        JSR         FLIP_START
+
+        CLR.L       D2
+        
+
         MOVE.B      #8, D1
-        JSR         CONVERT_ASCII
+        JSR         CONVERT_HEX
 
         
 
         RTS
 
+
+CONVERT_HEX:
+        ; SIMHALT    
+        CMPI.B      #$0, D1    
+        BEQ         HEX_DONE
+        
+        SUBI.B      #$1, D1       
+
+        CLR.L       D2
+    
+        MOVE.B      D7,D2
+            
+        MOVE.B      #28,D0    
+        LSL.L       D0,D2     
+        ROL.L       #4,D2
+        
+        ASR.L       #4, D7
+        
+        
+        CMP.B       #0,D2
+        BEQ         PRINT_ASCII0
+        CMP.B       #1,D2
+        BEQ         PRINT_ASCII1
+        CMP.B       #2,D2
+        BEQ         PRINT_ASCII2
+        CMP.B       #3,D2
+        BEQ         PRINT_ASCII3
+        CMP.B       #4,D2
+        BEQ         PRINT_ASCII4
+        CMP.B       #5,D2
+        BEQ         PRINT_ASCII5
+        CMP.B       #6,D2
+        BEQ         PRINT_ASCII6
+        CMP.B       #7,D2
+        BEQ         PRINT_ASCII7
+        CMP.B       #8,D2
+        BEQ         PRINT_ASCII8
+        CMP.B       #9,D2
+        BEQ         PRINT_ASCII9
+        CMP.B       #$A,D2
+        BEQ         PRINT_ASCIIA
+        CMP.B       #$B,D2
+        BEQ         PRINT_ASCIIB
+        CMP.B       #$C,D2
+        BEQ         PRINT_ASCIIC
+        CMP.B       #$D,D2
+        BEQ         PRINT_ASCIID
+        CMP.B       #$E,D2
+        BEQ         PRINT_ASCIIE
+        CMP.B       #$F,D2
+        BEQ         PRINT_ASCIIF
+        
+        ; error handling here
+        
+        
+
+HEX_DONE:
         RTS
 
 
 
-
+PRINT_ASCII0:
+        LEA         ZERO_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCII1:
+        LEA         ONE_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCII2:
+        LEA         TWO_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCII3:
+        LEA         THREE_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCII4:
+        LEA         FOUR_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCII5:
+        LEA         FIVE_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX        
+PRINT_ASCII6:
+        LEA         SIX_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCII7:
+        LEA         SEVEN_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCII8:
+        LEA         EIGHT_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCII9:
+        LEA         NINE_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCIIA:
+        LEA         A_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCIIB:
+        LEA         B_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCIIC:
+        LEA         C_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCIID:
+        LEA         D_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCIIE:
+        LEA         E_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
+PRINT_ASCIIF:
+        LEA         F_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         CONVERT_HEX
 
 
 

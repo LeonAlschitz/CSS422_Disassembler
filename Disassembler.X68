@@ -114,16 +114,20 @@ LET_ASCII:
 PRINT_ADDRESS:
         ; SIMHALT 0000 0000
         CLR.L       D1
-        MOVE.B      #$9, D1
-        MOVE.L      A3, D3
-        
-        
         CLR.L       D2
+        MOVE.L      A3, D2
         
-        JSR         ADDRESS_FLIP_START
         
+
+        
+        JSR         FLIP_START
+        MOVE.L      D7, D3
+
         CLR.L       D1
-        MOVE.B      #$9, D1
+        CLR.L       D2
+        CLR.L       D7
+        
+        MOVE.B      #$8, D1
         BRA         PRINT_ADDRESS_LOOP
 
         LEA         SPACE_MSG, A1
@@ -132,57 +136,62 @@ PRINT_ADDRESS:
         
         RTS
         
-ADDRESS_FLIP_START:        
+FLIP_START:        
         CLR.L       D1
+        CLR.L       D7
+        
         MOVE.B      #$8, D1
         
-        JSR         ADDRESS_FLIP_LOOP
-        MOVE.L      D2, D3
-        CLR.L       D2
+        JSR         FLIP_LOOP
+        
         
         RTS
         
-ADDRESS_FLIP_LOOP:
+FLIP_LOOP:
+
+        ; SIMHALT
         
         CMPI.B      #$0, D1
-        BEQ         ADDRESS_FLIP_DONE
+        BEQ         FLIP_DONE
         SUBI.B      #$1, D1
-        ASL.L       #4, D2
+        ASL.L       #4, D7
         
         CLR.L       D4
         
-        MOVE.B      D3, D4
+        MOVE.B      D2, D4
         
-        ASL.L       #8, D4
-        ASL.L       #8, D4
-        ASL.L       #8, D4
-        ASL.L       #4, D4
+        MOVE.B      #28,D0    
+        LSL.L       D0,D4     
+        ROL.L       #4,D4
         
-        ASR.L       #4, D4
-        ASR.L       #8, D4
-        ASR.L       #8, D4
-        ASR.L       #8, D4
-        
-        ADD.B       D4, D2
+        ADD.B       D4, D7
         
         
-        ASR.L       #4, D3
+        ASR.L       #4, D2
         
-        BRA         ADDRESS_FLIP_LOOP
+        BRA         FLIP_LOOP
 
-ADDRESS_FLIP_DONE:
+FLIP_DONE:
         RTS
 
 
         
 
 PRINT_ADDRESS_LOOP:
-        SIMHALT
+        ; SIMHALT
+        
         CMPI.B      #$0, D1
         BEQ         PRINT_ADDRESS_EXIT
+        
+        
         SUBI.B      #$1, D1
         
         MOVE.B      D3, D2
+        MOVE.B      #28,D0    
+        LSL.L       D0,D2     
+        ROL.L       #4,D2 
+        
+        
         ASR.L       #4, D3
         
         
@@ -220,10 +229,10 @@ PRINT_ADDRESS_LOOP:
         BEQ         PRINT_ADRF
 
 
+
         BRA         PRINT_ADDRESS_LOOP
         
-        
-        
+
         
 
 PRINT_ADDRESS_EXIT:
@@ -316,6 +325,18 @@ PRINT_ADRF:
 
 
 FILE_LOOP:
+        CLR.L       D0
+        CLR.L       D1
+        CLR.L       D2
+        CLR.L       D3
+        CLR.L       D4
+        CLR.L       D5
+        CLR.L       D6
+        CLR.L       D7
+        SIMHALT
+
+
+
         ;       Add branch here that will take the current address in A3
         ;       Turn it into characters and print it to the screen with space
         JSR         PRINT_ADDRESS
@@ -332,6 +353,8 @@ FILE_LOOP:
 
         CMP.L      A3, A4
         ;       If our pointer is at the end, BRA to DONE
+        
+        
         
         
         BEQ         DONE
@@ -393,6 +416,7 @@ END_ADDR        DS.B        40
                 
                 
         END    START    
+
 
 
 
