@@ -44,26 +44,31 @@ SizeThreeBits:
 PRINT_BYTE:
     LEA  BYTE_MSG, A1       ;
     MOVE.B #0, STORE_SIZE   ;
-    BRA PRINT_TAB           ;
+    JSR PRINT_TAB           ;
+    RTS
 *.W
 PRINT_WORD:
     LEA  WORD_MSG, A1       ;
     MOVE.B #1, STORE_SIZE   ;
-    BRA PRINT_TAB           ;
+    JSR PRINT_TAB           ;
+    RTS
 *.L
 PRINT_LONG:
     LEA  LONG_MSG, A1       ;
     MOVE.B #2, STORE_SIZE   ;
-    BRA PRINT_TAB           ;
+    JSR PRINT_TAB           ;
+    RTS
 
 *print size of opcode
 PRINT_SIZE:
     MOVE.B #14, D0 ;
     TRAP   #15     ;
+    RTS
       
 PRINT_TAB:
     CLR.L D3      ;
     MOVE.B TAB, D3;
+    RTS
       
 *when no matches      
 RESTORE_STACK:
@@ -442,10 +447,8 @@ OP_CODE_BASE_MOVE:
         LEA         MOVE_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
-        LEA         BYTE_MSG, A1
-        MOVE.B      #14, D0
-        TRAP        #15
-        RTS         
+        JSR         EA_MOVE;
+           
 
 
 ; first 4 bits = 0010 BLOCK --------------------    
@@ -489,6 +492,22 @@ J_MOVE_W:
     RTS
     
 ; /BLOCK --------------------
+ADD_BYTE:
+    ADD.B #1, D3 ; 1 BYTE
+    RTS
+    
+ADD_WORD:
+    ADD.B #2, D3 ; 2 BYTES
+    RTS
+
+ADD_LONG:
+    ADD.B #4, D3 ; 4 BYTES
+    RTS
+
+WRONG_SIZE:
+    LEA WRONG_S, A1
+    MOVE.B      #14, D0
+    TRAP        #15
 
 
 ; END MOVE BLOCK ------------------------------
@@ -666,7 +685,7 @@ OP_CODE_ASR:
 
 *MEMORY SHIFTS, WORK WITH EA
 ROT_SHIFT:
-
+        
 
 
 
@@ -759,9 +778,12 @@ STORE_SIZE:     DS.B        1
 ERROR_INSTR:    DC.B  'INVALID INSTRUCTION',0
 ; Size messages
 
+WRONG_S:    DC.B    'INVALID OPCODE SIZE', 0
+
 BYTE_MSG:       DC.B        '.B',0
 WORD_MSG:       DC.B        '.W',0
 LONG_MSG:       DC.B        '.L',0
+
 
 
 
