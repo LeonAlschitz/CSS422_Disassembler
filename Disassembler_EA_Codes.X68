@@ -15,23 +15,6 @@
 ; A4 will store ending address
 
 
-; -------------------------------------
-; General outline
-
-
-; Get Source Mode and Registration
-; Get Destination Mode and Registration
-; based off of these values, you can determine the Addressing mode, and size
-
-; Depending on the opcode, the mode can be found in a few different locations
-
-
-; Print out the rest of the data as you process it
-
-
-; --------------------------------------
-
-
 
 ; based on the size of the move operation Print out an amount of data as is.
 ; MOVE.B will print out the operation and 1 additional Byte after the OP code as text.
@@ -44,10 +27,11 @@ EA_MOVE:
 ; E = Source Register
 
 ; 00AA BBBC CCDD DEEE 
-        ; SIMHALT
-    
+        SIMHALT
+        CLR.L       D1
         CLR.L       D5
         CLR.L       D6
+        
         MOVE.W      D4, D5
         MOVE.W      D4, D6
         
@@ -71,9 +55,7 @@ EA_MOVE:
         LEA         SEPERATOR, A1
         MOVE.B      #14, D0
         TRAP        #15
-        
-        
-        
+        SIMHALT
         CLR.L       D5
         CLR.L       D6
         MOVE.W      D4, D5
@@ -82,31 +64,55 @@ EA_MOVE:
         MOVE.B      #7,D1     
         LSL.W       D1,D5       
         MOVE.B      #13,D1
-        LSR.W       D1,D5  
+        LSR.W       D1,D5
+        ; 0000 000C CC00 0000
+        ; Isolating Destination Mode  
             
         LSL.W       #4,D6  
         LSR.W       D1,D6
+        ; 0000 BBB0 0000 0000
+        ; Isolating Destination Register
         
         JSR         MODE_TABLE
-        
-        ; Isolate Destination Mode and Register
-        
-        ; JSR EA_JUMP_TABLE
-        
-        ; Final output Format = 00001000 MOVE.X D##, D##
-    
+
+
         RTS
+        
+        
+; X+Y = Effective addressing
+; XXX = Mode
+; YYY = Register
     
+; 0000 0000 00XX XYYY
+EA_LEA:
+        CLR.L       D1
+        CLR.L       D5
+        CLR.L       D6
+
+        MOVE.W      D4, D5
+        MOVE.W      D4, D6
+
+
+        ; Print Out ", "
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+
+        RTS
+
 
 
 *-----------MODE_TABLE------------------------------------
-; Possible modes Dn = 0,An = 1,(An) = 2,(An)+ = 3,-(An) = 4
+; Possible modes Dn = 0,An = 1,(An) = 2,(An)+ = 3,-(An) = 4, Absolute Data = 7
 MODE_TABLE:
 
         CMP.B       #0,D5
         BEQ         J_TBL_D
-        CMP.B       #2,D5
+        CMP.B       #1,D5
         BEQ         J_TBL_A
+        CMP.B       #2,D5
+        BEQ         J_TBL_A_P
         CMP.B       #3,D5
         BEQ         J_TBL_A_INCR
         CMP.B       #4,D5
@@ -121,6 +127,13 @@ J_ABS:
         JSR         J_ABS_TABLE
         RTS
 
+J_TBL_A:
+        LEA         MODE_1_MSG, A1 ; A#
+        MOVE.B      #14, D0
+        TRAP        #15
+        JSR         DISPLAY_REG
+
+        RTS
 
 
 J_TBL_D:
@@ -130,7 +143,7 @@ J_TBL_D:
         JSR         DISPLAY_REG
         RTS
 
-J_TBL_A:
+J_TBL_A_P:
 
         LEA         MODE_A_MSG, A1 ; (A#)
         MOVE.B      #14, D0
@@ -192,7 +205,7 @@ J_ABS_TABLE:
         
 ;   Word
 J_ABS_W:
-        ; SIMHALT
+        SIMHALT
         LEA         DOLLAR_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
@@ -204,19 +217,41 @@ J_ABS_W:
         
         CLR.L       D1
         CLR.L       D2
-        CLR.L       D4
-        MOVE.B      #16, D1
+        CLR.L       D7
+        MOVE.B      #4, D1
         JSR         CONVERT_ASCII
         
-        MOVE.L      D4, A1
+        MOVE.L      D7, A1
         MOVE.B      #14, D0
         TRAP        #15
 
         RTS
 ;   Long
 J_ABS_L:
+        SIMHALT
+        LEA         DOLLAR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        CLR.L       D1
+        CLR.L       D2
+        CLR.L       D7
 
 
+        
+        MOVE.L      (A3)+, D2
+        
+        JSR         FLIP_START
+
+        CLR.L       D2
+        
+
+        MOVE.B      #8, D1
+        JSR         CONVERT_HEX
+
+
+        
+        
         RTS
 
 ;   Error
@@ -227,27 +262,22 @@ J_ABS_ERROR:
 ;   Hard Coded Data
 ;   based on the OP code size, read the appropriate amount of data, and move pointer forward accordingly 
 
-;   Size num 0,4 = Byte 1,5 = Word 2,6 Long
+;   Size num 0 = Byte 1 = Word 2 Long
 
 DATA_TABLE:
+        SIMHALT
         LEA         DATA_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
 
 
         CMP.B       #0,D3 
-        BEQ         DATA_B      
-        CMP.B       #4,D3
         BEQ         DATA_B
 
         CMP.B       #1,D3 
-        BEQ         DATA_W      
-        CMP.B       #5,D3
         BEQ         DATA_W
         
         CMP.B       #2,D3 
-        BEQ         DATA_L      
-        CMP.B       #6,D3
         BEQ         DATA_L
         
         RTS
@@ -255,7 +285,6 @@ DATA_TABLE:
 DATA_B:
         CLR.L       D1
         CLR.L       D2
-        CLR.L       D4
         CLR.L       D7
         
         MOVE.W      (A3)+, D2
@@ -277,7 +306,6 @@ DATA_B:
 DATA_W:
         CLR.L       D1
         CLR.L       D2
-        CLR.L       D4
         CLR.L       D7
         
         MOVE.W      (A3)+, D2
@@ -298,9 +326,9 @@ DATA_W:
         RTS
 
 DATA_L:
+        SIMHALT
         CLR.L       D1
         CLR.L       D2
-        CLR.L       D4
         CLR.L       D7
         
         MOVE.L      (A3)+, D2
@@ -465,17 +493,17 @@ PRINT_ASCIIF:
 
 
 
-MODE_0_MSG:     DC.B        'D',0
-MODE_1_MSG:     DC.B        'A',0
-MODE_A_MSG:     DC.B        '(A',0
+MODE_0_MSG:     DC.B        ' D',0
+MODE_1_MSG:     DC.B        ' A',0
+MODE_A_MSG:     DC.B        ' (A',0
 MODE_A_1_MSG:   DC.B        ')',0
 MODE_A_2_MSG:   DC.B        ')+',0
-MODE_MINUS_MSG: DC.B        '-(A',0
+MODE_MINUS_MSG: DC.B        ' -(A',0
 
-SEPERATOR:      DC.B        ', ',0
+SEPERATOR:      DC.B        ',',0
 
-POUND_MSG:      DC.B        '#',0
-DOLLAR_MSG:     DC.B        '$',0
+POUND_MSG:      DC.B        ' #',0
+DOLLAR_MSG:     DC.B        ' $',0
 DATA_MSG:       DC.B        ' #$',0
 
 TEMP_MSG:       DC.B        'TMP',0
@@ -483,6 +511,9 @@ TEMP_MSG:       DC.B        'TMP',0
 
 
 TMP_STR         DS.B        32
+
+
+
 
 
 

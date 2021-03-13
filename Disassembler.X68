@@ -24,10 +24,10 @@ START:
         
         
         CLR.L       D2
-        CLR.L       D3
         CLR.L       D4
+        CLR.L       D7
         JSR         CONVERT_ASCII
-        MOVEA.L     D4,A3
+        MOVEA.L     D7, A3
         
         
         
@@ -43,10 +43,10 @@ START:
         TRAP        #15
         
         CLR.L       D2
-        CLR.L       D3
         CLR.L       D4
+        CLR.L       D7
         JSR         CONVERT_ASCII
-        MOVEA.L     D4,A4
+        MOVEA.L     D7, A4
         
         
         ; add loop later that checks if data entered is valid for both messages
@@ -59,7 +59,6 @@ START:
 
 
 CONVERT_ASCII:                  ; Convert Ascii values to Hex. 00011111 00011110 00100001 00101011 = 31 30 33 43. 31 30 33 43 => 0001 0000 0011 1100 = 1 0 3 C
-        
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
         BEQ         ASCII_DONE
     
@@ -70,7 +69,7 @@ CONVERT_ASCII:                  ; Convert Ascii values to Hex. 00011111 00011110
         MOVE.B      #$39, D0    ; Moves 39 into D3, Ascii Characters after 39 are not letters
         CMP.B       D0, D2
         
-        ; SIMHALT
+
         BLE         NUM_ASCII   ; data in D2 is less than 39, Most likely a number
         BRA         LET_ASCII   ; If not a number, then it is an ASCII Letter
 
@@ -83,13 +82,13 @@ NUM_ASCII:
         
         MOVE.B      #$30, D0
         SUB.B       D0, D2      ; ASCII numbers start at 30. 30 = 0, 31 = 1, etc
-        ADD.B       D2, D4      ; new ASCII number stored at D4
+        ADD.B       D2, D7      ; new ASCII number stored at D7
         
 
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
         BEQ         ASCII_DONE
         
-        ASL.L       #4, D4
+        ASL.L       #4, D7
       
         BRA         CONVERT_ASCII
         
@@ -100,13 +99,13 @@ LET_ASCII:
 
         MOVE.B      #$37, D0
         SUB.B       D0, D2      ; Hex letters we care about are from A-F, we can use math do achieve this
-        ADD.B       D2, D4      ; 41 is used to represent A in Hex. Hexadecimal subtraction: 41 - 37 = A
+        ADD.B       D2, D7      ; 41 is used to represent A in Hex. Hexadecimal subtraction: 41 - 37 = A
                                 ; 46 is used to represent F in Hex. 46 - 37 = F
         
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
         BEQ         ASCII_DONE
         
-        ASL.L       #4, D4
+        ASL.L       #4, D7
         
         
         BRA         CONVERT_ASCII
@@ -156,15 +155,15 @@ FLIP_LOOP:
         SUBI.B      #$1, D1
         ASL.L       #4, D7
         
-        CLR.L       D4
+        CLR.L       D5
         
-        MOVE.B      D2, D4
+        MOVE.B      D2, D5
         
         MOVE.B      #28,D0    
-        LSL.L       D0,D4     
-        ROL.L       #4,D4
+        LSL.L       D0, D5     
+        ROL.L       #4, D5
         
-        ADD.B       D4, D7
+        ADD.B       D5, D7
         
         
         ASR.L       #4, D2
@@ -333,7 +332,7 @@ FILE_LOOP:
         CLR.L       D5
         CLR.L       D6
         CLR.L       D7
-        SIMHALT
+        
 
 
 
@@ -343,7 +342,7 @@ FILE_LOOP:
         
         
         MOVE.W      (A3)+, D4
-
+        ; SIMHALT
         JSR         JUMP_OP_CODE
         
         LEA         NEW_LINE, A1
@@ -352,8 +351,8 @@ FILE_LOOP:
 
 
         CMP.L      A3, A4
-        ;       If our pointer is at the end, BRA to DONE
-        
+        ;       If our pointer is at the end or beyond, BRA to DONE
+        ; SIMHALT
         
         
         
@@ -373,10 +372,11 @@ DONE:
         
 * Put variables and constants here
                 INCLUDE     'Disassembler_OP_Codes.x68'
-START_MSG:      DC.B        'Enter a starting address:',0
-END_MSG:        DC.B        'Enter an ending address:',0               
+              
                 INCLUDE     'Disassembler_EA_Codes.x68'
-                
+START_MSG:      DC.B        'Enter a starting address:',0
+END_MSG:        DC.B        'Enter an ending address:',0
+              
 CR              EQU         $0D
 LF              EQU         $0A
 
@@ -416,6 +416,12 @@ END_ADDR        DS.B        40
                 
                 
         END    START    
+
+
+
+
+
+
 
 
 
