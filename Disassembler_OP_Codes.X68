@@ -73,7 +73,7 @@ JUMP_1:
 JUMP_2:
 
         JSR         Bits8to6
-        CMP.B       #$1, D3 
+        CMP.B       #$1, D1 
         BEQ         J_MOVEA_L 
         BNE         J_MOVE_L
 
@@ -85,7 +85,7 @@ JUMP_2:
 JUMP_3:
 
         JSR         Bits8to6
-        CMPI.B       #$1, D3 
+        CMPI.B       #$1, D1 
         BEQ         J_MOVEA_W
         BNE         J_MOVE_W
         
@@ -98,17 +98,17 @@ JUMP_3:
 *0100 - NOP, LEA, JSR
 JUMP_4:
 
-        CLR.L       D3
-        MOVE.W      D4, D3
-        CMP.W       #$4E71, D3 ;NOP 
+        CLR.L       D1
+        MOVE.W      D4, D1
+        CMP.W       #$4E71, D1 ;NOP 
         BEQ         OP_CODE_NOP
         
         JSR         Bits7to6     ;
-        CMPI.B      #2, D3
+        CMPI.B      #2, D1
         BEQ         OP_CODE_JSR ;JSR
         
         JSR         Bits8to6     ;
-        CMPI.B      #7, D3
+        CMPI.B      #7, D1
         BEQ         OP_CODE_LEA ;LEA
         
         
@@ -120,9 +120,9 @@ JUMP_4:
 
 *0101 - ADDQ       
 JUMP_5:
-        CLR.L       D3
-        MOVE.L      D4, D3
-        BTST        #8,D3 
+        CLR.L       D1
+        MOVE.L      D4, D1
+        BTST        #8,D1 
         BEQ         OP_CODE_ADDQ  
         BRA         INVALID_INSTR
         RTS  
@@ -178,94 +178,94 @@ INVALID_INSTR:
 *-----------ISOLATE BITS------------------------------------
 *---------ISOLATE SRC REG-------
 Bits2to0:
-        MOVE.W      D4, D3
+        MOVE.W      D4, D1
         MOVE.B      #13, D0     ; Shifting 13 bits
-        LSL.W       D0, D3      ; shorten to two bits
-        LSR.W       D0, D3      ; isolate two bits
+        LSL.W       D0, D1      ; shorten to two bits
+        LSR.W       D0, D1      ; isolate two bits
         RTS
 *-------------------------------
     
 Bits3to0:
-        MOVE.W      D4, D3
+        MOVE.W      D4, D1
         MOVE.B      #12, D0     ; Shift 12 bits
-        LSL.W       D0, D3      ; Shorten to 4th bit
-        LSR.W       D0, D3      ; Isolate 4 bits
+        LSL.W       D0, D1      ; Shorten to 4th bit
+        LSR.W       D0, D1      ; Isolate 4 bits
         RTS
     
 *---------ISOLATE SRC REG-------    
 Bits5to3:
-        MOVE.W      D4, D3
+        MOVE.W      D4, D1
         MOVE.B      #10, D0     ; Shift 10 bits
-        LSL.W       D0, D3      ; cut to 5th bit
+        LSL.W       D0, D1      ; cut to 5th bit
         MOVE.B      #13, D0     ; Shift 13 bits
-        LSR.W       D0, D3      ; Isolate bits 5-3
+        LSR.W       D0, D1      ; Isolate bits 5-3
         RTS
 *-------------------------------
 
 *------ISOLATE SRC--------    
 Bits7to0:
-        MOVE.W      D4, D3
-        LSL.W       #8, D3      ; cut to 8th bit
-        LSR.W       #8, D3      ; Isolate 7-0
+        MOVE.W      D4, D1
+        LSL.W       #8, D1      ; cut to 8th bit
+        LSR.W       #8, D1      ; Isolate 7-0
         RTS
 *-------------------------    
 Bits7to4: 
-        MOVE.W      D4, D3
-        LSL.W       #8, D3      ; cut to 8th bit
+        MOVE.W      D4, D1
+        LSL.W       #8, D1      ; cut to 8th bit
         MOVE.B      #12, D0     ; shift 12 bits
-        LSR.W       D0, D3      ; isolate 7-4
+        LSR.W       D0, D1      ; isolate 7-4
         RTS
     
 Bits7to6:
-        MOVE.W      D4, D3
-        LSL.W       #8, D3      ; cut to 8th bit
+        MOVE.W      D4, D1
+        LSL.W       #8, D1      ; cut to 8th bit
         MOVE.B      #14, D0     ; shift 14 bits
-        LSR.W       D0, D3      ; isolate 7-6
+        LSR.W       D0, D1      ; isolate 7-6
         RTS
     
 Bits8to3:
-        MOVE.W      D4, D3
-        LSL.W       #7, D3      ; cut to 9th bit
+        MOVE.W      D4, D1
+        LSL.W       #7, D1      ; cut to 9th bit
         MOVE.B      #10, D0     ; shift 10 bits
-        LSR.W       D0, D3      ; isolate 8-3
+        LSR.W       D0, D1      ; isolate 8-3
         RTS
     
 Bits8to4:
-        MOVE.W      D4, D3
-        LSL.W       #7, D3      ; cut to 9th bit
+        MOVE.W      D4, D1
+        LSL.W       #7, D1      ; cut to 9th bit
         MOVE.B      #11, D0     ; shift 11 bits
-        LSR.W       D0, D3      ; isolate 8-4
+        LSR.W       D0, D1      ; isolate 8-4
         RTS
     
 Bits8to6:
-        MOVE.W      D4, D3
-        LSL.W       #7, D3      ; cut to 9th bit
+        MOVE.W      D4, D1
+        LSL.W       #7, D1      ; cut to 9th bit
         MOVE.B      #13, D0     ; shift 13 bits
-        LSR.W       D0, D3      ; isolate 8-6
+        LSR.W       D0, D1      ; isolate 8-6
         RTS
 *----ISOLATE DEST---------    
 Bits11to6:
-        MOVE.W      D4, D3
-        LSL.W       #4, D3      ; cut to 12th bit
+        MOVE.W      D4, D1
+        LSL.W       #4, D1      ; cut to 12th bit
         MOVE.B      #10, D0     ; shift 10 bits
-        LSR.W       D0, D3      ; isolate 11-6
+        LSR.W       D0, D1      ; isolate 11-6
         RTS
 *-------------------------
 
      
 Bits11to8:
-        MOVE.W      D4, D3
-        LSL.W       #4, D3      ; cut to 12th bit
+        MOVE.W      D4, D1
+        LSL.W       #4, D1      ; cut to 12th bit
         MOVE.B      #12, D0     ; shift 12 bits
-        LSR.W       D0, D3      ; isolate 11-8
+        LSR.W       D0, D1      ; isolate 11-8
         RTS
 
 *----ISOLATE DEST REG-----      
 Bits11to9:
-        MOVE.W      D4, D3
-        LSL.W       #4, D3      ; cut to 12th bit
+        MOVE.W      D4, D1
+        LSL.W       #4, D1      ; cut to 12th bit
         MOVE.B      #13, D0     ; shift 13 bits
-        LSR.W       D0, D3      ; isolate 11-9
+        LSR.W       D0, D1      ; isolate 11-9
         RTS
 *-------------------------
 
@@ -342,13 +342,6 @@ J_MOVE_W:
         JSR         EA_MOVE
         
         RTS  
-    
-
-
-
-
-
-
 
 
 *NOP/JSR/LEA - 0100
