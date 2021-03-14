@@ -33,60 +33,60 @@ START:
 * Remove optional CPU instructions your disassembler haven't handled
 
       ORI.W     #$ABCD, D0  ; 1
-      ANDI.W    #$ABCD, D1  ; optional
-      SUBI.W	#$ABCD, D2  ; optional
-      ADDI.W	#$ABCD, D3  ; optional
-      EORI.W    #$ABCD, D4  ; optional
-      CMPI.W    #$ABCD, D5  ; optional
+      *ANDI.W    #$ABCD, D1  ; optional
+      *SUBI.W	#$ABCD, D2  ; optional
+      *ADDI.W	#$ABCD, D3  ; optional
+      *EORI.W    #$ABCD, D4  ; optional
+      *CMPI.W    #$ABCD, D5  ; optional
       
       MOVEA.W	D6, A7      ; 2
       MOVE.W	D0, D1      ; 3
       
-      CLR.W     D2          ; optional
-      NOT.W     D3          ; optional
-      EXT.W     D4          ; optional       
-      TRAP      #15         ; optional
+      *CLR.W     D2          ; optional
+      *NOT.W     D3          ; optional
+      *EXT.W     D4          ; optional       
+      *TRAP      #15         ; optional
       NOP                   ; 4
-      STOP      #$2700      ; optional
-      RTE                   ; optional
-      RTS                   ; optional
+      *STOP      #$2700      ; optional
+      *RTE                   ; optional
+      *RTS                   ; optional
       JSR	    (A5)        ; optional
-      JMP       (A6)		; optional
-      MOVEM.W	D7, (A0)    ; 5
+      *JMP       (A6)		; optional
+      *MOVEM.W	D7, (A0)    ; 5
       LEA	    (A1), A2    ; 6
       
       ADDQ.W	#$7, D3     ; 7
-      SUBQ.W    #$7, D4     ; optional
+      *SUBQ.W    #$7, D4     ; optional
       
       BRA   	$1234		; 16bit (word) displacement  8
       BSR   	$1234		; 16bit (word) displacement  9
-      BEQ   	$1234		; optional
+      *BEQ   	$1234		; optional
       
       MOVEQ	    #$AB, D5    ; 10
       
       DIVU	    D6, D7      ; 11
       DIVS      D0, D1      ; optional
-      OR.W	    D2, D3      ; optional
+      *OR.W	    D2, D3      ; optional
       
       SUB.W	    D2, D3      ; 12
       
-      EOR.W     D4, D5      ; optional
+      *EOR.W     D4, D5      ; optional
       CMP.W	    D6, D7      ; 13
       
       MULU	    D0, D1	    ; 14
       MULS	    D2, D3      ; optional
-      AND.W	    D3, D4      ; optional
+      *AND.W	    D3, D4      ; optional
       
       ADD.W	    D5, D6      ; 15
       ADDA.W	D6, A7      ; 16
       
-      ASL.W	    #1, D0      ; 17
-      ASR.W	    D2, D1      ; 18
+      *ASL.W	    #1, D0      ; 17
+      *ASR.W	    D2, D1      ; 18
       
-      LSL.W	    #3, D2      ; optional
-      LSR.W	    D4, D3      ; optional
-      ROL.W	    #5, D4      ; optional
-      ROR.W	    D6, D5      ; optional
+      *LSL.W	    #3, D2      ; optional
+      *LSR.W	    D4, D3      ; optional
+      *ROL.W	    #5, D4      ; optional
+      *ROR.W	    D6, D5      ; optional
 
 * Data size distinction.....................................
 * Total: 6pts
@@ -141,6 +141,10 @@ LOOP:
       MOVE.L    #$12345678, ($ABCDEF12).L ; mode 7 subclass 1 and 4  2.5pts
 
       END   START
+
+
+
+
 
 
 
