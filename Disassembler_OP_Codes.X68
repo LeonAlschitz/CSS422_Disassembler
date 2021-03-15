@@ -43,7 +43,18 @@ JUMP_OP_CODE:
         CMP.B       #$8, D3
         BEQ         JUMP_8
         CMP.B       #$9, D3
-        BEQ         JUMP_9
+        BEQ         OP_CODE_SUB
+        CMP.B       #11, D3
+        BEQ         JUMP_B ; 
+        
+        CMP.B       #12, D3
+        BEQ         JUMP_C ;
+        
+        CMP.B       #13, D3
+        BEQ         JUMP_D ;
+        
+        CMP.B       #14, D3
+        BEQ         JUMP_E ;
 
         BRA         JUMP_ERROR
 
@@ -55,11 +66,13 @@ JUMP_OP_CODE:
 *0000 - ORI      
 JUMP_0:
         *ORI
-        *JSR         Bits11to8
-        *CMP.B       #$0, D3  
-        *BEQ         OP_CODE_ORI
+        CLR.L       D2
+        JSR         Bits11to8
+        CMP.B       #$0, D2  
+        BEQ         OP_CODE_ORI
         
         BRA         INVALID_INSTR
+        RTS
         
 *0001 - MOVE.B     
 JUMP_1:
@@ -88,9 +101,7 @@ JUMP_3:
         CMPI.B       #$1, D1 
         BEQ         J_MOVEA_W
         BNE         J_MOVE_W
-        
-        
-        
+    
         BRA INVALID_INSTR
         
         RTS
@@ -98,43 +109,65 @@ JUMP_3:
 *0100 - NOP, LEA, JSR
 JUMP_4:
 
-        CLR.L       D1
-        MOVE.W      D4, D1
-        CMP.W       #$4E71, D1 ;NOP 
+        CLR.L       D2
+        MOVE.W      D4, D2
+        CMP.W       #$4E71, D2 ;NOP 
         BEQ         OP_CODE_NOP
         
-        JSR         Bits7to6     ;
-        CMPI.B      #2, D1
-        BEQ         OP_CODE_JSR ;JSR
-        
         JSR         Bits8to6     ;
-        CMPI.B      #7, D1
+        CMP.B       #7, D2
         BEQ         OP_CODE_LEA ;LEA
+
+        JSR         Bits11to9     ;
+        CMP.B       #7, D2
+        BEQ         OP_CODE_JSR ;JSR
+        JMP         MOVEM_CHECK ;
         
         
         BRA INVALID_INSTR
         
-        RTS  
+        RTS   
+
 
 
 
 *0101 - ADDQ       
 JUMP_5:
-        CLR.L       D1
-        MOVE.L      D4, D1
-        BTST        #8,D1 
+        CLR.L       D2
+        MOVE.L      D4, D2
+        BTST        #8,D2 
         BEQ         OP_CODE_ADDQ  
         BRA         INVALID_INSTR
         RTS  
-        
+*BRA, BSR        
 JUMP_6:
+        CLR.L       D2
+        JSR     Bits11to8     ;
+        CMP.B   #0, D2        ;
+        BEQ     OP_CODE_BRA   ; 
+        CMP.B   #1, D2        ;
+        BEQ     OP_CODE_BSR   ;
 
-        BRA         INVALID_INSTR
+        BRA INVALID_INSTR
+
         RTS  
+*MOVEQ
 JUMP_7:
+        CLR.L       D2
+        LEA         MOVEQ_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
         BRA         INVALID_INSTR 
         RTS
+
+*1000 - DIVU,DIVS   
 JUMP_8:
+        CLR.L       D2
+        JSR         Bits8to6  ;
+        CMP.B       #3, D2    ;
+        BEQ         OP_CODE_DIVU ;
+        CMP.B       #7, D2    ;
+        BEQ         OP_CODE_DIVS ;
         BRA         INVALID_INSTR
         RTS
 
@@ -146,19 +179,41 @@ JUMP_A:
         BRA         INVALID_INSTR
         RTS 
 JUMP_B:
+        CLR.L       D2
+        JSR         Bits8to6  ;
+    ;CHECKING OPMODE FIELD
+        CMP.B       #0, D2   ;
+        BEQ         OP_CODE_CMP ;
+        CMP.B       #1, D2    ;
+        BEQ         OP_CODE_CMP ;
+        CMP.B       #2, D2    ;
+        BEQ         OP_CODE_CMP ;
         BRA         INVALID_INSTR
         RTS         
 
 JUMP_C:
+        CLR.L       D2
+        JSR         Bits8to6  ;
+        CMP         #3, D2    ;
+        BEQ         OP_CODE_MULU ;
+        CMP         #7, D2   ;
+        BEQ         OP_CODE_MULS ;
+
         BRA         INVALID_INSTR
         RTS 
 
 JUMP_D:
+        CLR.L       D2
+        JSR         Bits7to6  ;
+        CMP.B       #3, D2    ;
+        BEQ         OP_CODE_ADDA
+        JMP         OP_CODE_ADD
         BRA         INVALID_INSTR
         RTS 
  
+ 
 JUMP_E:
-        BRA         INVALID_INSTR
+        BRA         ASD_REG
         RTS  
          
 JUMP_ERROR:       
@@ -175,99 +230,124 @@ INVALID_INSTR:
         RTS
 
 
+
 *-----------ISOLATE BITS------------------------------------
 *---------ISOLATE SRC REG-------
 Bits2to0:
-        MOVE.W      D4, D1
+        MOVE.W      D4, D2
         MOVE.B      #13, D0     ; Shifting 13 bits
-        LSL.W       D0, D1      ; shorten to two bits
-        LSR.W       D0, D1      ; isolate two bits
+        LSL.W       D0, D2      ; shorten to two bits
+        LSR.W       D0, D2      ; isolate two bits
         RTS
 *-------------------------------
     
 Bits3to0:
-        MOVE.W      D4, D1
+        MOVE.W      D4, D2
         MOVE.B      #12, D0     ; Shift 12 bits
-        LSL.W       D0, D1      ; Shorten to 4th bit
-        LSR.W       D0, D1      ; Isolate 4 bits
+        LSL.W       D0, D2      ; Shorten to 4th bit
+        LSR.W       D0, D2      ; Isolate 4 bits
         RTS
     
 *---------ISOLATE SRC REG-------    
 Bits5to3:
-        MOVE.W      D4, D1
+        MOVE.W      D4, D2
         MOVE.B      #10, D0     ; Shift 10 bits
-        LSL.W       D0, D1      ; cut to 5th bit
+        LSL.W       D0, D2      ; cut to 5th bit
         MOVE.B      #13, D0     ; Shift 13 bits
-        LSR.W       D0, D1      ; Isolate bits 5-3
+        LSR.W       D0, D2      ; Isolate bits 5-3
         RTS
 *-------------------------------
-
+Bits4to3:
+        MOVE.W      D4, D2
+        MOVE.B      #12, D0     ; Shift 12 bits
+        LSL.W       D0, D2      ; cut to 5th bit
+        MOVE.B      #14, D0     ; Shift 14 bits
+        LSR.W       D0, D2      ; Isolate bits 4-3
+        RTS
+        
 *------ISOLATE SRC--------    
 Bits7to0:
-        MOVE.W      D4, D1
-        LSL.W       #8, D1      ; cut to 8th bit
-        LSR.W       #8, D1      ; Isolate 7-0
+        MOVE.W      D4, D2
+        LSL.W       #8, D2      ; cut to 8th bit
+        LSR.W       #8, D2      ; Isolate 7-0
         RTS
 *-------------------------    
 Bits7to4: 
-        MOVE.W      D4, D1
-        LSL.W       #8, D1      ; cut to 8th bit
+        MOVE.W      D4, D2
+        LSL.W       #8, D2      ; cut to 8th bit
         MOVE.B      #12, D0     ; shift 12 bits
-        LSR.W       D0, D1      ; isolate 7-4
+        LSR.W       D0, D2      ; isolate 7-4
         RTS
     
 Bits7to6:
-        MOVE.W      D4, D1
-        LSL.W       #8, D1      ; cut to 8th bit
+        MOVE.W      D4, D2
+        LSL.W       #8, D2      ; cut to 8th bit
         MOVE.B      #14, D0     ; shift 14 bits
-        LSR.W       D0, D1      ; isolate 7-6
+        LSR.W       D0, D2      ; isolate 7-6
         RTS
     
 Bits8to3:
-        MOVE.W      D4, D1
-        LSL.W       #7, D1      ; cut to 9th bit
+        MOVE.W      D4, D2
+        LSL.W       #7, D2      ; cut to 9th bit
         MOVE.B      #10, D0     ; shift 10 bits
-        LSR.W       D0, D1      ; isolate 8-3
+        LSR.W       D0, D2      ; isolate 8-3
         RTS
     
 Bits8to4:
-        MOVE.W      D4, D1
-        LSL.W       #7, D1      ; cut to 9th bit
+        MOVE.W      D4, D2
+        LSL.W       #7, D2      ; cut to 9th bit
         MOVE.B      #11, D0     ; shift 11 bits
-        LSR.W       D0, D1      ; isolate 8-4
+        LSR.W       D0, D2      ; isolate 8-4
         RTS
     
 Bits8to6:
-        MOVE.W      D4, D1
-        LSL.W       #7, D1      ; cut to 9th bit
+        MOVE.W      D4, D2
+        LSL.W       #7, D2      ; cut to 9th bit
         MOVE.B      #13, D0     ; shift 13 bits
-        LSR.W       D0, D1      ; isolate 8-6
+        LSR.W       D0, D2      ; isolate 8-6
+        RTS
+Bits9to7:
+        MOVE.W      D4, D2
+        LSL.W       #6, D2      ; cut to 10th bit
+        MOVE.B      #13, D0     ; shift 13 bits
+        LSR.W       D0, D2      ; isolate 8-6
         RTS
 *----ISOLATE DEST---------    
 Bits11to6:
-        MOVE.W      D4, D1
-        LSL.W       #4, D1      ; cut to 12th bit
+        MOVE.W      D4, D2
+        LSL.W       #4, D2      ; cut to 12th bit
         MOVE.B      #10, D0     ; shift 10 bits
-        LSR.W       D0, D1      ; isolate 11-6
+        LSR.W       D0, D2      ; isolate 11-6
         RTS
 *-------------------------
 
      
 Bits11to8:
-        MOVE.W      D4, D1
-        LSL.W       #4, D1      ; cut to 12th bit
+        MOVE.W      D4, D2
+        LSL.W       #4, D2      ; cut to 12th bit
         MOVE.B      #12, D0     ; shift 12 bits
-        LSR.W       D0, D1      ; isolate 11-8
+        LSR.W       D0, D2      ; isolate 11-8
         RTS
 
 *----ISOLATE DEST REG-----      
 Bits11to9:
-        MOVE.W      D4, D1
-        LSL.W       #4, D1      ; cut to 12th bit
+        MOVE.W      D4, D2
+        LSL.W       #4, D2      ; cut to 12th bit
         MOVE.B      #13, D0     ; shift 13 bits
-        LSR.W       D0, D1      ; isolate 11-9
+        LSR.W       D0, D2      ; isolate 11-9
         RTS
 *-------------------------
+
+*----ISOLATE INSTRUCTION FIELD-----      
+Bit5:
+        MOVE.W      D4, D2
+        MOVE.B      #10, D0
+        LSL.W       D0, D2     
+        MOVE.B      #15, D0     
+        LSR.W       D0, D2     
+        RTS
+*-------------------------
+
 
 
 *MOVE.B - 0001
@@ -343,6 +423,15 @@ J_MOVE_W:
         
         RTS  
 
+*ORI - 0000
+*-------------------------------------------------------------
+OP_CODE_ORI:
+        LEA         ORI_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        RTS
+
 
 *NOP/JSR/LEA - 0100
 *-------------------------------------------------------------
@@ -352,29 +441,86 @@ OP_CODE_NOP:
         TRAP        #15
 
         RTS
+           
 
 OP_CODE_JSR:
         LEA         JSR_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
         
-
-        *STORE DEST AND STORE IN REGISTER
-        *EA
+        JSR         EA_GENERIC
 
         RTS
-
         
 OP_CODE_LEA:
         LEA         LEA_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
-        MOVE.B      #2, D0
+        
+        CLR.L       D3
+        MOVE.B      #2, D3
 
         *EA
-        *JSR         EA_LEA
+        JSR         EA_ASRC
 
         RTS
+
+*MOVEM/EXT - 0100
+*-------------------------------------------------------------
+OP_CODE_MOVEM:
+        JSR         Bits9to7 ;check for MOVEM and EXT
+        CMP.B       #1, D2   ;
+        BEQ         MOVEM_OR_EXT
+        JMP         INVALID_INSTR 
+        
+MOVEM_OR_EXT:
+        JSR         Bits5to3  ;
+        CMP.B       #0, D2    ;
+        BEQ         OP_CODE_EXT ;
+        
+        MOVE.W      D4, D2
+        BTST        #10, D2
+        BEQ         MOVEM_SIZE
+        
+MOVEM_SIZE:
+        BTST        #6, D2
+        BEQ         MOVEM_W
+        JMP         MOVEM_L
+        
+MOVEM_W:
+        LEA         MOVEM_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        LEA         WORD_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15  
+        *EA
+        RTS
+        
+MOVEM_L:
+        LEA         MOVEM_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        LEA         LONG_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15   
+        *EA
+        RTS   
+         
+OP_CODE_EXT:
+        LEA         EXT_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        RTS
+
+
+MOVEM_CHECK:
+        CLR.L       D2
+        MOVE.L      D4, D2
+        BTST        #11,D2 ;
+        BNE         OP_CODE_MOVEM
+        JMP         INVALID_INSTR               
+
 
 *ADDQ - 0101, BScc, Scc
 *-------------------------------------------------------------        
@@ -384,10 +530,239 @@ OP_CODE_ADDQ:
         TRAP        #15
         
         RTS
-        ;JSR         Bits7to6  
-        ;MOVE        #5, TAB
-        ;JSR         SizeTwoBits 
- *EA STUFF, MAYBE CHECK FOR DISPLACEMENT COUNT?
+        
+ 
+*CMP - 1011
+*-------------------------------------------------------------
+OP_CODE_CMP:
+
+        LEA         CMP_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         OPMODE
+        JSR         REVERSESRC_EA
+        
+        RTS
+        
+*DIVU - 1000
+*-------------------------------------------------------------
+OP_CODE_DIVU:
+        LEA         DIVU_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        MOVE.B      #1, D3        
+        JSR         EA_DSRC
+        
+        RTS
+        
+OP_CODE_DIVS:
+        LEA         DIVS_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        RTS
+
+*SUB - 1001
+*-------------------------------------------------------------
+OP_CODE_SUB:
+        LEA         SUB_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         OPMODE
+        
+        JSR         REVERSESRC_EA
+        
+        RTS
+        
+*Byte Word Long
+*000 001 010 100 101 110
+*Operation
+*Dn – < ea > ? Dn < ea > – Dn ? < ea >        
+OPMODE:
+        JSR         Bits8to6
+        CMP.B       #0, D2
+        BEQ         PRINT_BYTE
+        CMP.B       #4, D2
+        BEQ         PRINT_BYTE
+        
+        CMP.B       #1, D2
+        BEQ         PRINT_WORD
+        CMP.B       #5, D2
+        BEQ         PRINT_WORD
+        
+        CMP.B       #2, D2
+        BEQ         PRINT_LONG
+        CMP.B       #6, D2
+        BEQ         PRINT_LONG
+        
+        JSR         WRONG_SIZE
+        
+OPMODE_ADDA:
+        JSR         Bits8to6
+        CMP.B       #3, D2
+        BEQ         PRINT_WORD 
+        CMP.B       #7, D2
+        BEQ         PRINT_LONG
+        JSR         WRONG_SIZE        
+
+OPMODE_ASHIFT:
+        JSR         Bits7to6
+        CMP.B       #0, D2
+        BEQ         PRINT_BYTE
+        CMP.B       #1, D2
+        BEQ         PRINT_WORD
+        CMP.B       #2, D2
+        BEQ         PRINT_LONG
+
+        JSR         WRONG_SIZE
+        
+PRINT_BYTE:
+        LEA         BYTE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        MOVE.B      #0, D3
+        RTS
+
+PRINT_WORD:
+        LEA         WORD_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        MOVE.B      #1, D3
+        RTS
+
+PRINT_LONG:
+        LEA         LONG_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        MOVE.B      #2, D3
+        RTS
+
+WRONG_SIZE:
+        LEA         ERROR_SIZE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        RTS
+        
+*BRA/BSR - 0110
+*-------------------------------------------------------------
+OP_CODE_BRA:
+        LEA         BRA_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        RTS
+
+OP_CODE_BSR:
+        LEA         BSR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        RTS
+        
+*MOVEQ - 0111
+*-------------------------------------------------------------
+OP_CODE_MOVEQ:
+        LEA         MOVEQ_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        RTS
+
+*MULU - 1100
+*-------------------------------------------------------------
+OP_CODE_MULS:
+        LEA         MULS_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        RTS
+        
+OP_CODE_MULU:
+        LEA         MULU_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         REVERSESRC_EA
+        RTS
+
+*ADD/ADDA - 1101
+*-------------------------------------------------------------
+OP_CODE_ADD:
+        LEA         ADD_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         OPMODE
+        JSR         EA_ADD
+        
+        RTS
+        
+OP_CODE_ADDA:
+        LEA         ADDA_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         OPMODE_ADDA
+        JSR         EA_ASRC
+        
+        RTS
+        
+      
+*ASL/ASR - 1110
+*-------------------------------------------------------------
+ASD_REG:
+        CLR.L       D2
+        MOVE.W      D4, D2
+        BTST        #8, D2
+        BNE         OP_CODE_ASL_REG
+        LEA         ASR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        RTS
+        *EA
+        
+OP_CODE_ASL_REG:
+        LEA         ASL_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        RTS
+        *EA
+        
+        
+*REG_SIZE:
+*        CMP.B       #0, D2
+*        BEQ         PRINT_BYTE
+*        CMP.B       #1, D2
+*        BEQ         PRINT_WORD
+*        CMP.B       #2, D2
+*        BEQ         PRINT_LONG
+*        JMP         WRONG_SIZE
+
+MEM_SHIFT:
+        CLR.L       D2
+        JSR         Bits4to3
+        CMP.B       #0, D2
+        BEQ         ASD_MEM
+
+ASD_MEM:
+        CLR.L       D2
+        MOVE.W      D4, D2
+        BTST        #8, D2
+        BEQ         OP_CODE_ASR_MEM
+        LEA         ASL_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        RTS
+        *EA
+      
+OP_CODE_ASR_MEM:
+        LEA         ASR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        *EA
+        RTS
+        
+        
 
 
 
@@ -400,17 +775,20 @@ NOP_MSG:        DC.B        'NOP',0
 MOVEM_MSG:      DC.B        'MOVEM',0
 LEA_MSG:        DC.B        'LEA',0
 JSR_MSG:        DC.B        'JSR',0
-BRA_MSG:        DC.B        'BRA',0
+BRA_MSG:        DC.B        'BRA  ',0
 BSR_MSG:        DC.B        'BSR',0
 MOVEQ_MSG:      DC.B        'MOVEQ',0
 DIVU_MSG:       DC.B        'DIVU',0
+DIVS_MSG:       DC.B        'DIVS',0
 SUB_MSG:        DC.B        'SUB',0
 CMP_MSG:        DC.B        'CMP',0
 MULU_MSG:       DC.B        'MULU',0
+MULS_MSG:       DC.B        'MULS',0
 ADD_MSG:        DC.B        'ADD',0
 ADDA_MSG:       DC.B        'ADDA',0
 ASL_MSG:        DC.B        'ASL',0
 ASR_MSG:        DC.B        'ASR',0
+EXT_MSG:        DC.B        'EXT',0
 POUND:          DC.B        '#',0
 DOLLAR:         DC.B        '$',0
 PERCENT:        DC.B        '%',0
@@ -422,6 +800,12 @@ WORD_MSG:       DC.B        '.W',0
 LONG_MSG:       DC.B        '.L',0
 ERROR_OP_MSG:   DC.B        'Not A valid OP code',0
 IMPLEMENT_MSG:  DC.B        'OP code not implemented yet',0
+ERROR_INSTR:    DC.B        'INVALID OP-CODE',0
+ERROR_SIZE_MSG: DC.B        'INVALIDE OP-CODE SIZE',0
+
+
+
+
 
 
 

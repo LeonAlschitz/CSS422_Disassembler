@@ -19,65 +19,146 @@
 ; based on the size of the move operation Print out an amount of data as is.
 ; MOVE.B will print out the operation and 1 additional Byte after the OP code as text.
 EA_MOVE:
-        
-; A = Size
-; B = Destination Register
-; C = Destination Mode
-; D = Source Mode
-; E = Source Register
-
-; 00AA BBBC CCDD DEEE 
-        SIMHALT
-        CLR.L       D1
         CLR.L       D5
         CLR.L       D6
-        
-        MOVE.W      D4, D5
-        MOVE.W      D4, D6
-        
-        
-        MOVE.B      #10,D1
-        LSL.W       D1,D5       
-        MOVE.B      #13,D1
-        LSR.W       D1,D5
-        ; 0000 0000 00DD D000
-        ; Isolating Source Mode
-        
-        
-        LSL.W       D1,D6
-        LSR.W       D1,D6
-        ; 0000 0000 0000 0EEE
-        ; Isolating Source Register 
-       
+
+        JSR         Bits5to3
+        MOVE.B      D2, D5
+        JSR         Bits3to0
+        MOVE.B      D2, D6
         JSR         MODE_TABLE
+        
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        CLR.L       D5
+        CLR.L       D6
+
+        JSR         Bits8to6
+        MOVE.B      D2, D5
+        JSR         Bits11to9
+        MOVE.B      D2, D6
+        JSR         MODE_TABLE
+        
+        RTS
+        
+EA_GENERIC:
+    
+        JSR         Bits5to3
+        MOVE.B      D2, D5
+        JSR         Bits3to0
+        MOVE.B      D2, D6
+        JSR         MODE_TABLE
+
+        RTS
+        
+        ; #data, ea
+DATASRC_EA:
+        
+        JSR         J_ABS_TABLE
         
         ; Print Out ", "
         LEA         SEPERATOR, A1
         MOVE.B      #14, D0
         TRAP        #15
-        SIMHALT
-        CLR.L       D5
-        CLR.L       D6
-        MOVE.W      D4, D5
-        MOVE.W      D4, D6
         
-        MOVE.B      #7,D1     
-        LSL.W       D1,D5       
-        MOVE.B      #13,D1
-        LSR.W       D1,D5
-        ; 0000 000C CC00 0000
-        ; Isolating Destination Mode  
-            
-        LSL.W       #4,D6  
-        LSR.W       D1,D6
-        ; 0000 BBB0 0000 0000
-        ; Isolating Destination Register
+        JSR         EA_GENERIC
+        
+        RTS
+        
+        
+REVERSESRC_EA:
+    
+        JSR         EA_GENERIC
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         Bits11to9
+        MOVE.B      D2, D6
+        JSR         MODE_TABLE
+        RTS        
+EA_ADD:
+        JSR         EA_GENERIC
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        JSR         Bits11to9
+        MOVE.B      D2, D6
+        JSR         Bits8to6
+        MOVE.B      D2, D5
+        
+        JSR         MODE_TABLE
+        RTS  
+        
+        
+        
+        ; ea, A source
+EA_ASRC:
+        JSR         EA_GENERIC
+        
+        ; Print Out ", "
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        MOVE.B      #1, D5
+        JSR         Bits11to9
+        MOVE.B      D2, D6
         
         JSR         MODE_TABLE
 
+        RTS
+        ; ea, D source
+EA_DSRC:
+        JSR         EA_GENERIC
+        
+        ; Print Out ", "
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        MOVE.B      #0, D5
+        JSR         Bits11to9
+        MOVE.B      D2, D6
+        
+        JSR         MODE_TABLE
 
         RTS
         
+EA_AS:
+
+        JSR         Bit5
+        CMP.B       #0, D2
+        BEQ         AS_COUNT
+        
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        
+
+        RTS        
+AS_COUNT:
+        LEA         POUND_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        JSR         Bits11to9
+        CMP.B       #0, D2
+        BEQ         AS_FIX
+        MOVE.B      D2, D6
+        JSR         DISPLAY_REG
+
+        
+
+
+        RTS        
+
+AS_FIX:
+        MOVE.B      #8, D2
+        RTS
         
 ; X+Y = Effective addressing
 ; XXX = Mode
@@ -193,19 +274,19 @@ DISPLAY_REG:
 J_ABS_TABLE:
         ; SIMHALT
         CMP.B       #0,D6
-        BEQ         J_ABS_W
+        BEQ         J_SUBCLASS_0
             
         CMP.B       #1,D6
-        BEQ         J_ABS_L
+        BEQ         J_SUBCLASS_1
             
         CMP.B       #4,D6
         BEQ         DATA_TABLE
             
         RTS
         
-;   Word
-J_ABS_W:
-        SIMHALT
+
+J_SUBCLASS_0:
+
         LEA         DOLLAR_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
@@ -221,15 +302,18 @@ J_ABS_W:
         MOVE.B      #4, D1
         JSR         CONVERT_ASCII
         
-        MOVE.L      D7, A1
+        MOVE.W      D7, A1
         MOVE.B      #14, D0
         TRAP        #15
+        
+
 
         RTS
-;   Long
-J_ABS_L:
-        SIMHALT
-        LEA         DOLLAR_MSG, A1
+
+
+J_SUBCLASS_1:
+        ; SIMHALT
+        LEA         SUBCLASS1_1, A1
         MOVE.B      #14, D0
         TRAP        #15
 
@@ -250,7 +334,9 @@ J_ABS_L:
         JSR         CONVERT_HEX
 
 
-        
+        LEA         SUBCLASS1_2, A1
+        MOVE.B      #14, D0
+        TRAP        #15
         
         RTS
 
@@ -265,7 +351,7 @@ J_ABS_ERROR:
 ;   Size num 0 = Byte 1 = Word 2 Long
 
 DATA_TABLE:
-        SIMHALT
+        ; SIMHALT
         LEA         DATA_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
@@ -326,7 +412,7 @@ DATA_W:
         RTS
 
 DATA_L:
-        SIMHALT
+        ; SIMHALT
         CLR.L       D1
         CLR.L       D2
         CLR.L       D7
@@ -355,11 +441,11 @@ CONVERT_HEX:
 
         CLR.L       D2
     
-        MOVE.B      D7,D2
+        MOVE.B      D7, D2
             
-        MOVE.B      #28,D0    
-        LSL.L       D0,D2     
-        ROL.L       #4,D2
+        MOVE.B      #28, D0    
+        LSL.L       D0, D2     
+        ROL.L       #4, D2
         
         ASR.L       #4, D7
         
@@ -503,14 +589,19 @@ MODE_MINUS_MSG: DC.B        ' -(A',0
 SEPERATOR:      DC.B        ',',0
 
 POUND_MSG:      DC.B        ' #',0
-DOLLAR_MSG:     DC.B        ' $',0
+SUBCLASS1_1:    DC.B        ' ($',0
+SUBCLASS1_2:    DC.B        ').L',0
 DATA_MSG:       DC.B        ' #$',0
+DOLLAR_MSG:     DC.B        '$',0
 
 TEMP_MSG:       DC.B        'TMP',0
 
 
 
 TMP_STR         DS.B        32
+
+
+
 
 
 

@@ -9,9 +9,12 @@
     
 ; A3 will store starting address
 ; A4 will store ending address
+; A5 will be used for paging
 ; D0 is used to store values that will get compared
     
 START:
+
+        JSR         CLEAR_ALL_REG
 
         ;   Ask user to enter valid starting address, convert from ascii to hex and then store it in A3                 
         LEA         START_MSG, A1
@@ -52,11 +55,33 @@ START:
         ; add loop later that checks if data entered is valid for both messages
         
         
+        
+        MOVEA.L     A3, A5
+        ADD.L       #32, A5
+        
         JSR         FILE_LOOP
         
+CLEAR_ALL_REG:
+        CLR.L       D0
+        CLR.L       D1
+        CLR.L       D2
+        CLR.L       D3
+        CLR.L       D4
+        CLR.L       D5
+        CLR.L       D6
+        CLR.L       D7
 
+        MOVEA.L     #$00000000, A0
+        MOVEA.L     #$00000000, A1
+        MOVEA.L     #$00000000, A2
+        MOVEA.L     #$00000000, A3
+        MOVEA.L     #$00000000, A4
+        MOVEA.L     #$00000000, A5
+        MOVEA.L     #$00000000, A6
+        
+        
 
-
+        RTS
 
 CONVERT_ASCII:                  ; Convert Ascii values to Hex. 00011111 00011110 00100001 00101011 = 31 30 33 43. 31 30 33 43 => 0001 0000 0011 1100 = 1 0 3 C
         CMPI.B      #$0, D1     ; check if we have traversed the whole length
@@ -352,15 +377,35 @@ FILE_LOOP:
 
         CMP.L      A3, A4
         ;       If our pointer is at the end or beyond, BRA to DONE
-        ; SIMHALT
-        
-        
-        
         BEQ         DONE
-        BLE         DONE       
+        BLE         DONE
+        
+        ; SIMHALT
+        CMP.L       A3, A5
+        BEQ         PRINT_DELAY
+        ; BGT         PRINT_DELAY
+
+
+       
         BRA         FILE_LOOP
 
 
+
+PRINT_DELAY:
+        ; SIMHALT
+        LEA         NEXT_PAGE_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        
+
+        MOVE.B      #5, D0
+        TRAP        #15
+
+        CMPI.B      #13, D1
+        BNE         PRINT_DELAY
+
+        ADD.L       #32, A5
+        BRA         FILE_LOOP
 
 
 
@@ -404,6 +449,8 @@ SUCCESS_MSG:    DC.B        'Success',0
 
 NEW_LINE:       DC.B        '',CR,LF,0
 
+NEXT_PAGE_MSG:  DC.B        'Please press enter to continue: ',CR,LF,0
+
   
                 
                 
@@ -416,6 +463,9 @@ END_ADDR        DS.B        40
                 
                 
         END    START    
+
+
+
 
 
 
