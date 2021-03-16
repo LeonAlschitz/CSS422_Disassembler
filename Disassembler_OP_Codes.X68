@@ -289,7 +289,7 @@ Bits5to3:
 *-------------------------------
 Bits4to3:
         MOVE.W      D4, D2
-        MOVE.B      #12, D0     ; Shift 12 bits
+        MOVE.B      #11, D0     ; Shift 11 bits
         LSL.W       D0, D2      ; cut to 5th bit
         MOVE.B      #14, D0     ; Shift 14 bits
         LSR.W       D0, D2      ; Isolate bits 4-3
@@ -873,7 +873,7 @@ LEFT_REG:
         JSR         Bits4to3
         CMP.B       #0, D2
         BEQ         ASL_REG
-        CMP.B       #2, D2
+        CMP.B       #1, D2
         BEQ         LSL_REG
         CMP.B       #3, D2
         BEQ         ROL_REG
@@ -885,10 +885,11 @@ RIGHT_REG:
         JSR         Bits4to3
         CMP.B       #0, D2
         BEQ         ASR_REG
-        CMP.B       #2, D2
+        CMP.B       #1, D2
         BEQ         LSR_REG
         CMP.B       #3, D2
         BEQ         ROR_REG
+        
         RTS   
 ASL_REG:
         LEA         ASL_MSG, A1
@@ -949,26 +950,14 @@ OP_CODE_ASD_MEM:
 
         RTS
 LEFT_MEM:
-        CLR.L       D2
-        JSR         Bits4to3
-        CMP.B       #0, D2
-        BEQ         ASL_MEM
-        CMP.B       #1, D2
-        BEQ         LSL_MEM
-        CMP.B       #3, D2
-        BEQ         ROL_MEM
-        
+        BRA         ASL_MEM
+
         RTS
         
 RIGHT_MEM:
-        CLR.L       D2
-        JSR         Bits4to3
-        CMP.B       #0, D2
-        BEQ         ASR_MEM
-        CMP.B       #1, D2
-        BEQ         LSR_MEM
-        CMP.B       #3, D2
-        BEQ         ROR_MEM
+
+        BRA         ASR_MEM
+
         RTS        
 
 ASL_MEM:
@@ -1077,6 +1066,7 @@ ERROR_OP_MSG:   DC.B        'Not A valid OP code',0
 IMPLEMENT_MSG:  DC.B        'OP code not implemented yet',0
 ERROR_INSTR:    DC.B        'INVALID OP-CODE',0
 ERROR_SIZE_MSG: DC.B        'INVALIDE OP-CODE SIZE',0
+
 
 
 
