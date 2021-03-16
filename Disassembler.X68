@@ -42,7 +42,7 @@ START_ADDR_CHECK:
         JSR         Bit0        
         CMP.B       #0, D2
         
-        BNE         START_ADDR_CHECK
+        BNE         START_ERROR
         BRA         SAVE_START
 
 SAVE_START:
@@ -51,6 +51,18 @@ SAVE_START:
 
         ADD.L       #32, A5
         BRA         END_ADDR_CHECK
+
+START_ERROR:
+        LEA         BAD_ADDR_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         START_ADDR_CHECK 
+
+END_ERROR:
+        LEA         BAD_ADDR_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         END_ADDR_CHECK   
 
 END_ADDR_CHECK:        
         ;   Ask user to enter valid ending address, convert from ascii to hex and then store it in A4 
@@ -69,7 +81,7 @@ END_ADDR_CHECK:
         JSR         CONVERT_ASCII
 
         JSR         CHECK_ODD
-        BNE         END_ADDR_CHECK
+        BNE         END_ERROR
         
         BRA         SAVE_END
         
@@ -460,15 +472,15 @@ DONE:
         
 * Put variables and constants here
                 INCLUDE     'Disassembler_OP_Codes.x68'
-                START_MSG:      DC.B        'Enter a starting address:',0
-                END_MSG:        DC.B        'Enter an ending address:',0
+
                 INCLUDE     'Disassembler_EA_Codes.x68'
                 
-
+                START_MSG:      DC.B        'Enter a starting address:',0
+                END_MSG:        DC.B        'Enter an ending address:',0
 GREETING_MSG:   DC.B        'Welcome to Sarah and Leons Disassembler!',CR,LF,0
 REPEAT_MSG:     DC.B        'Would you like to restart the program? (Press enter to restart)',CR,LF,0
 GOODBYE_MSG:    DC.B        'Thank you for using Sarah and Leons Disassembler!',CR,LF,0
-BAD_ADDR_MSG:   DC.B        'One or both addresses are invalid.',CR,LF,0
+BAD_ADDR_MSG:   DC.B        'The address is invalid.',CR,LF,0
 
               
 CR              EQU         $0D
@@ -512,6 +524,8 @@ END_ADDR        DS.B        40
                 
                 
         END    START    
+
+
 
 
 

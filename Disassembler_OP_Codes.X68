@@ -43,7 +43,7 @@ JUMP_OP_CODE:
         CMP.B       #$8, D3
         BEQ         JUMP_8
         CMP.B       #$9, D3
-        BEQ         OP_CODE_SUB
+        BEQ         JUMP_9    
         CMP.B       #11, D3
         BEQ         JUMP_B ; 
         
@@ -123,20 +123,39 @@ JUMP_4:
         MOVE.W      D4, D2
         CMP.W       #$4E71, D2 ;NOP 
         BEQ         OP_CODE_NOP
+        CMP.W       #$4E72, D2 ;STOP 
+        BEQ         OP_CODE_STOP
+        CMP.W       #$4E73, D2 ;RTE 
+        BEQ         OP_CODE_RTE
+        CMP.W       #$4E75, D2 ;RTS 
+        BEQ         OP_CODE_RTS
         
-        JSR         Bits8to6     ;
-        CMP.B       #7, D2
-        BEQ         OP_CODE_LEA ;LEA
+        
+        JSR         Bits11to8
+        CMP.B       #2, D2
+        BEQ         OP_CODE_CLR
+        CMP.B       #6, D2
+        BEQ         OP_CODE_NOT
+        *CMP.B       #8, D2
+        *BEQ         OP_CODE_EXT
 
-        JSR         Bits11to9     ;
-        CMP.B       #7, D2
-        BEQ         OP_CODE_JSR ;JSR
-        CMP.B       #9, D2
-        BEQ         OP_CODE_JMP ;JMP
-        
         JSR         Bits9to7
         CMP.B       #1, D2
         BEQ         OP_CODE_MOVEM
+        
+        
+        
+        
+        JSR         Bits8to6     ;
+        CMP.B       #7, D2
+        BEQ         OP_CODE_LEA ;LEA        
+
+        CMP.B       #2, D2
+        BEQ         OP_CODE_JSR ;JSR
+        CMP.B       #3, D2
+        BEQ         OP_CODE_JMP ;JMP
+        
+        
 
 
         
@@ -190,11 +209,13 @@ JUMP_8:
         BEQ         OP_CODE_DIVU ;
         CMP.B       #7, D2    ;
         BEQ         OP_CODE_DIVS ;
-        BRA         INVALID_INSTR
+        BRA         OP_CODE_OR
         RTS
 
 JUMP_9:
-        BRA         INVALID_INSTR
+        JSR         OP_CODE_SUB
+
+
         RTS         
 
 JUMP_A:
@@ -220,6 +241,8 @@ JUMP_C:
         BEQ         OP_CODE_MULU ;
         CMP         #7, D2   ;
         BEQ         OP_CODE_MULS ;
+        CMP         #8, D2   ;
+        BEQ         OP_CODE_AND ;
 
         BRA         INVALID_INSTR
         RTS 
@@ -524,10 +547,62 @@ OP_CODE_CMPI:
         JSR         OPMODE_ASHIFT    
         JSR         ABS_DATASRC_EA
         RTS
-*NOP/JSR/JMP/LEA - 0100
+*NOP/JSR/JMP/LEA/CLR/NOT/EXT - 0100
 *-------------------------------------------------------------
+OP_CODE_CLR:
+        LEA         CLR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        JSR         OPMODE_ASHIFT
+        JSR         EA_GENERIC
+
+        RTS
+OP_CODE_NOT:
+        LEA         NOT_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        JSR         OPMODE_ASHIFT
+        JSR         EA_GENERIC
+
+        RTS
+OP_CODE_EXT:
+        LEA         EXT_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        JSR         OPMODE_ASHIFT
+        JSR         EA_GENERIC
+
+        RTS
+
+
 OP_CODE_NOP:
         LEA         NOP_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        RTS
+OP_CODE_STOP:
+        LEA         STOP_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        LEA         SPACE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        MOVE.B      #1, D3
+        JSR         DATA_TABLE
+
+        RTS        
+        
+OP_CODE_RTE:
+        LEA         RTE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        RTS
+OP_CODE_RTS:
+        LEA         RTS_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
 
@@ -580,15 +655,6 @@ OP_CODE_MOVEM:
         RTS
         
         
-MOVEM_OR_EXT:
-        JSR         Bits5to3  ;
-        CMP.B       #0, D2    ;
-        BEQ         OP_CODE_EXT ;
-        
-        ;MOVE.W      D4, D2
-        ;BTST        #10, D2
-        ;BEQ         MOVEM_SIZE
-        
         
 MOVEM_W:
         LEA         MOVEM_MSG, A1
@@ -616,12 +682,7 @@ MOVEM_L:
         
         
         RTS   
-         
-OP_CODE_EXT:
-        LEA         EXT_MSG, A1
-        MOVE.B      #14, D0
-        TRAP        #15
-        RTS
+
 
 
 ;MOVEM_CHECK:
@@ -687,6 +748,16 @@ OP_CODE_DIVS:
         
         MOVE.B      #1, D3        
         JSR         EA_DSRC
+        
+        RTS
+OP_CODE_OR:
+        LEA         OR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         OPMODE
+        
+        JSR         REVERSESRC_EA
         
         RTS
 
@@ -832,6 +903,14 @@ OP_CODE_MULU:
         
         JSR         REVERSESRC_EA
         RTS
+OP_CODE_AND:
+        LEA         AND_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        JSR         OPMODE
+        
+        JSR         REVERSESRC_EA
+        RTS        
 
 *ADD/ADDA - 1101
 *-------------------------------------------------------------
@@ -1028,6 +1107,12 @@ ADDI_MSG:       DC.B        'ADDI',0
 EORI_MSG:       DC.B        'EORI',0
 CMPI_MSG:       DC.B        'CMPI',0
 NOP_MSG:        DC.B        'NOP',0
+CLR_MSG:        DC.B        'CLR',0
+NOT_MSG:        DC.B        'NOT',0
+EXT_MSG:        DC.B        'EXT',0
+STOP_MSG:        DC.B        'STOP',0
+RTE_MSG:        DC.B        'RTE',0
+RTS_MSG:        DC.B        'RTS',0
 MOVEM_MSG:      DC.B        'MOVEM',0
 LEA_MSG:        DC.B        'LEA',0
 JSR_MSG:        DC.B        'JSR',0
@@ -1050,9 +1135,11 @@ LSL_MSG:        DC.B        'LSL',0
 LSR_MSG:        DC.B        'LSR',0
 ROL_MSG:        DC.B        'ROL',0
 ROR_MSG:        DC.B        'ROR',0
+OR_MSG:         DC.B        'OR',0
+EOR_MSG:        DC.B        'EOR',0
+AND_MSG:        DC.B        'AND',0
+TRAP_MSG:       DC.B        'TRAP',0
 
-
-EXT_MSG:        DC.B        'EXT',0
 POUND:          DC.B        '#',0
 DOLLAR:         DC.B        '$',0
 PERCENT:        DC.B        '%',0
