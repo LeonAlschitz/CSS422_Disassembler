@@ -15,8 +15,15 @@
 START:
 
         JSR         CLEAR_ALL_REG
-
-        ;   Ask user to enter valid starting address, convert from ascii to hex and then store it in A3                 
+        
+        LEA         GREETING_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        
+        BRA         START_ADDR_CHECK
+        
+START_ADDR_CHECK:
+         ;   Ask user to enter valid starting address, convert from ascii to hex and then store it in A3                 
         LEA         START_MSG, A1
         MOVE.B      #14, D0    
         TRAP        #15
@@ -30,11 +37,22 @@ START:
         CLR.L       D4
         CLR.L       D7
         JSR         CONVERT_ASCII
+        
+        MOVE.B      D7, D4
+        JSR         Bit0        
+        CMP.B       #0, D2
+        
+        BNE         START_ADDR_CHECK
+        BRA         SAVE_START
+
+SAVE_START:
         MOVEA.L     D7, A3
-        
-        
-        
-        
+        MOVEA.L     A3, A5
+
+        ADD.L       #32, A5
+        BRA         END_ADDR_CHECK
+
+END_ADDR_CHECK:        
         ;   Ask user to enter valid ending address, convert from ascii to hex and then store it in A4 
         
         LEA         END_MSG, A1
@@ -49,17 +67,26 @@ START:
         CLR.L       D4
         CLR.L       D7
         JSR         CONVERT_ASCII
+
+        JSR         CHECK_ODD
+        BNE         END_ADDR_CHECK
+        
+        BRA         SAVE_END
+        
+CHECK_ODD:
+        MOVE.B      D7, D4
+        JSR         Bit0        
+        CMP.B       #0, D2
+        RTS
+
+CHECK_DATA:
+        
+        RTS
+
+SAVE_END:
         MOVEA.L     D7, A4
-        
-        
-        ; add loop later that checks if data entered is valid for both messages
-        
-        
-        
-        MOVEA.L     A3, A5
-        ADD.L       #32, A5
-        
-        JSR         FILE_LOOP
+        BRA         FILE_LOOP
+    
         
 CLEAR_ALL_REG:
         CLR.L       D0
@@ -377,13 +404,13 @@ FILE_LOOP:
 
         CMP.L      A3, A4
         ;       If our pointer is at the end or beyond, BRA to DONE
-        BEQ         DONE
-        BLE         DONE
+        BEQ         DONE_CHECK
+        BLE         DONE_CHECK
         
-        ; SIMHALT
+
         CMP.L       A3, A5
         BEQ         PRINT_DELAY
-        ; BGT         PRINT_DELAY
+        BLE         PRINT_DELAY
 
 
        
@@ -408,8 +435,24 @@ PRINT_DELAY:
         BRA         FILE_LOOP
 
 
+DONE_CHECK:
+        LEA         REPEAT_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        
+
+        MOVE.B      #5, D0
+        TRAP        #15
+
+        CMPI.B      #13, D1
+        BNE         DONE
+        
+        BRA         START
 
 DONE:   
+        LEA         GOODBYE_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
         MOVE.B      #9, D0
         TRAP        #15
         
@@ -417,10 +460,16 @@ DONE:
         
 * Put variables and constants here
                 INCLUDE     'Disassembler_OP_Codes.x68'
-              
+                START_MSG:      DC.B        'Enter a starting address:',0
+                END_MSG:        DC.B        'Enter an ending address:',0
                 INCLUDE     'Disassembler_EA_Codes.x68'
-START_MSG:      DC.B        'Enter a starting address:',0
-END_MSG:        DC.B        'Enter an ending address:',0
+
+
+GREETING_MSG:   DC.B        'Welcome to Sarah and Leons Disassembler!',CR,LF,0
+REPEAT_MSG:     DC.B        'Would you like to restart the program? (Press enter to restart)',CR,LF,0
+GOODBYE_MSG:    DC.B        'Thank you for using Sarah and Leons Disassembler!',CR,LF,0
+BAD_ADDR_MSG:   DC.B        'One or both addresses are invalid.',CR,LF,0
+
               
 CR              EQU         $0D
 LF              EQU         $0A
@@ -463,6 +512,9 @@ END_ADDR        DS.B        40
                 
                 
         END    START    
+
+
+
 
 
 

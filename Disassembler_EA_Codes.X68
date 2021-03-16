@@ -21,10 +21,9 @@
 EA_MOVE:
         CLR.L       D5
         CLR.L       D6
-
         JSR         Bits5to3
         MOVE.B      D2, D5
-        JSR         Bits3to0
+        JSR         Bits2to0
         MOVE.B      D2, D6
         JSR         MODE_TABLE
         
@@ -47,7 +46,7 @@ EA_GENERIC:
     
         JSR         Bits5to3
         MOVE.B      D2, D5
-        JSR         Bits3to0
+        JSR         Bits2to0
         MOVE.B      D2, D6
         JSR         MODE_TABLE
 
@@ -67,6 +66,22 @@ DATASRC_EA:
         
         RTS
         
+ABS_DATASRC_EA:
+
+        JSR         DATA_TABLE
+        
+        ; Print Out ", "
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         EA_GENERIC
+
+
+
+        RTS        
+
+
         
 REVERSESRC_EA:
     
@@ -127,6 +142,17 @@ EA_DSRC:
         JSR         MODE_TABLE
 
         RTS
+;EA_AS_MEM:
+
+;        JSR         Bits5to3
+;        MOVE.B      D2, D5
+;        JSR         ASD_MEM_MODE_CHECK
+;        MOVE.B      D2, D6
+;        JSR         MODE_TABLE
+
+;        RTS
+
+
         
 EA_AS:
 
@@ -134,13 +160,10 @@ EA_AS:
         CMP.B       #0, D2
         BEQ         AS_COUNT
         
-        LEA         SEPERATOR, A1
-        MOVE.B      #14, D0
-        TRAP        #15
+        BRA         AS_REGISTER
         
+        RTS    
         
-
-        RTS        
 AS_COUNT:
         LEA         POUND_MSG, A1
         MOVE.B      #14, D0    
@@ -150,9 +173,350 @@ AS_COUNT:
         BEQ         AS_FIX
         MOVE.B      D2, D6
         JSR         DISPLAY_REG
+        
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        MOVE.B      #0, D5
+        JSR         Bits2to0
+        MOVE.B      D2, D6
+        
+        JSR         MODE_TABLE
+
+
+        RTS
+        
+AS_REGISTER:
+
+        LEA         MODE_0_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        JSR         Bits11to9
+        CMP.B       #0, D2
+        BEQ         AS_FIX
+        MOVE.B      D2, D6
+        JSR         DISPLAY_REG
+
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        MOVE.B      #0, D5
+        JSR         Bits2to0
+        MOVE.B      D2, D6
+        
+        JSR         MODE_TABLE
+
+        RTS 
+    
+EA_MOVEM:
+        MOVE.L      D4, D2
+        BTST        #10,D2 
+        BEQ         MOVEM_REG
+        BRA         MOVEM_SRC
+
+        RTS
+        ; D, A
+MOVEM_REG:
+        LEA         SPACE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        CLR.L       D3
+        CLR.L       D5
+        CLR.L       D6
+        CLR.L       D7
+        
+        MOVE.W      (A3)+, D2
+        JSR         MOVEM_START
+        ; Print Out ", "
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         Bit6
+        MOVE.B      D2, D3
+        
+        
+        JSR         EA_GENERIC
+        RTS
+        ; A, D
+MOVEM_SRC:
+
+        JSR         Bit6
+        MOVE.B      D2, D3
+
+        JSR         EA_GENERIC
+        ; Print Out ", "
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        LEA         SPACE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        CLR.L       D3
+        CLR.L       D5
+        CLR.L       D6
+        CLR.L       D7
+        
+        MOVE.W      (A3)+, D2
+        JSR         MOVEM_START
+
+        RTS        
+
+*-----------MOVEM------------------------------------
+
+MOVEM_START:
+        MOVE.B      #4, D3
+        CLR.L       D5
+        CLR.L       D6
+        CLR.L       D7
+        JSR         MOVEM_LOOP
+        RTS
+        
+; D5 helps identify reg out of group
+; D6 helps identify Group out of word
+; D7 keeps track of the number of reg's    
+MOVEM_LOOP:
+
+        CMP.B       #0, D3
+        BEQ         MOVEM_DONE
+        SUB         #1, D3
+
+
+        MOVE.B      D2, D5
+        ASR.L       #4, D2
+        
+        CMP.B       #1, D5
+        BEQ         MOVEM_0
+        CMP.B       #2, D5
+        BEQ         MOVEM_1
+        CMP.B       #4, D5
+        BEQ         MOVEM_2
+        CMP.B       #8, D5
+        BEQ         MOVEM_3
+        
+        ADD         #1, D6
+        BRA         MOVEM_LOOP
+
+
+MOVEM_DONE
+        RTS 
+       
+MOVEM_0:
+        MOVE.B      #0, D5   
+        BRA         MOVEM_CHECK_PRINT
+MOVEM_1:
+        MOVE.B      #1, D5   
+        BRA         MOVEM_CHECK_PRINT
+MOVEM_2:
+        MOVE.B      #2, D5   
+        BRA         MOVEM_CHECK_PRINT        
+MOVEM_3:
+        MOVE.B      #3, D5   
+        BRA         MOVEM_CHECK_PRINT
+
+MOVEM_CHECK_PRINT:
+        CMP.B       #0, D7
+        BNE         MOVEM_DIVISOR
+        BRA         MOVEM_PRINT_MODE        
+
+MOVEM_DIVISOR:
+        LEA         DIVISOR_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        BRA         MOVEM_PRINT_MODE
+
+
+MOVEM_PRINT_MODE:        
+        ADD         #1, D7
+
+        CMP.B       #0, D6
+        BEQ         MOVEM_MODE0
+        CMP.B       #1, D6
+        BEQ         MOVEM_MODE1
+        CMP.B       #2, D6
+        BEQ         MOVEM_MODE2
+        BRA         MOVEM_MODE3
+        
+        
+MOVEM_MODE0:
+        LEA         MOVEM0_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        MOVE.B      D5, D1
+        MOVE.B      #$3, D0
+        TRAP        #15
+        ADD         #1, D6
+        
+        BRA         MOVEM_LOOP
+MOVEM_MODE1:
+        ADD         #4, D5
+        LEA         MOVEM0_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        MOVE.B      D5, D1
+        MOVE.B      #$3, D0
+        TRAP        #15
+        ADD         #1, D6
+        
+        BRA         MOVEM_LOOP        
+MOVEM_MODE2:
+        LEA         MOVEM1_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        MOVE.B      D5, D1
+        MOVE.B      #$3, D0
+        TRAP        #15
+        ADD         #1, D6
+        
+        BRA         MOVEM_LOOP       
+ 
+MOVEM_MODE3:
+        ADD         #4, D5
+        LEA         MOVEM1_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+        MOVE.B      D5, D1
+        MOVE.B      #$3, D0
+        TRAP        #15
+        ADD         #1, D6
+        
+        BRA         MOVEM_LOOP 
+       
+       
+EA_BRA:
+
+        JSR         Bits7to0
+        CMP.B       #0, D2
+        BEQ         BRA_WORD
+        CMP.B       #$FF, D2
+        BEQ         BRA_LONG
+        
+        BRA         BRA_BYTE
+
+        RTS
+
+BRA_BYTE:
+        
+        
+        LEA         SPACE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        LEA         DOLLAR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        MOVE.L      A3, D5
+        MOVE.W      D2, D6
+        ; ADD.L       D5, D6
+
+        MOVE.L      D6, D2
+        JSR         FLIP_START
+        
+        SWAP        D7
+        
+        CLR.L       D2
+        MOVE.B      #4, D1
+        JSR         CONVERT_HEX
+        RTS
+
+BRA_WORD:
+        LEA         SPACE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        LEA         DOLLAR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        MOVE.L      A3, D5
+        MOVE.W      (A3)+, D6
+        ADD.L       D5, D6
+
+        MOVE.L      D6, D2
+        JSR         FLIP_START
+        
+        SWAP        D7
+        
+        CLR.L       D2
+        MOVE.B      #4, D1
+        JSR         CONVERT_HEX
+
+        RTS
+BRA_LONG:
+
+        LEA         SPACE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        LEA         DOLLAR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        MOVE.L      A3, D5
+        MOVE.W      (A3)+, D6
+        ADD.L       D5, D6
+
+        MOVE.L      D6, D2
+        JSR         FLIP_START
+        
+        SWAP        D7
+        
+        CLR.L       D2
+        MOVE.B      #8, D1
+        JSR         CONVERT_HEX
+       
+       
+        
+EA_MOVEQ:
 
         
+        MOVE.B      D4, D2
+        
+        LEA         DATA_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
 
+        JSR         FLIP_START
+        
+
+        SWAP        D7
+        MOVE.B      #8, D1
+        LSR.W       D1, D7
+        MOVE.B      #2, D1
+        
+        JSR         CONVERT_HEX
+        
+        ; Print Out ", "
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+
+        MOVE.B      #0, D5
+        JSR         Bits11to9
+        MOVE.B      D2, D6
+
+        JSR         MODE_TABLE
+
+        RTS
+
+EA_ADDQ:
+
+        MOVE.B      #1, D1
+        JSR         Bits11to9
+        MOVE.B      D2, D7
+        
+        LEA         DATA_MSG, A1
+        MOVE.B      #14, D0    
+        TRAP        #15
+
+        JSR         CONVERT_HEX
+
+        ; Print Out ", "
+        LEA         SEPERATOR, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         EA_GENERIC
 
         RTS        
 
@@ -271,40 +635,51 @@ DISPLAY_REG:
         RTS
 
 *-----------Absolute_addressing table-------------------------
+
 J_ABS_TABLE:
         ; SIMHALT
         CMP.B       #0,D6
-        BEQ         J_SUBCLASS_0
+        BEQ         SUBCLASS_CHECK
             
         CMP.B       #1,D6
-        BEQ         J_SUBCLASS_1
+        BEQ         SUBCLASS_CHECK
             
         CMP.B       #4,D6
         BEQ         DATA_TABLE
             
         RTS
         
+SUBCLASS_CHECK:
+        MOVE.L      A3, A6
+        MOVE.L      (A3)+, D1
+        MOVE.L      A6, A3
+        MOVE.L      #0, A6
+        
+        SWAP        D1
+        
+        CMP.W       #0, D1
+        BEQ         J_SUBCLASS_0
+        BRA         J_SUBCLASS_1
 
+        
 J_SUBCLASS_0:
-
         LEA         DOLLAR_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
        
-
-        MOVE.W      (A3)+, A1
-        
-
-        
         CLR.L       D1
         CLR.L       D2
         CLR.L       D7
-        MOVE.B      #4, D1
-        JSR         CONVERT_ASCII
+        MOVE.L      (A3)+, D2
         
-        MOVE.W      D7, A1
-        MOVE.B      #14, D0
-        TRAP        #15
+
+        JSR         FLIP_START
+
+        CLR.L       D2
+        SWAP        D7
+
+        MOVE.B      #4, D1
+        JSR         CONVERT_HEX
         
 
 
@@ -577,7 +952,8 @@ PRINT_ASCIIF:
 
 
 
-
+MOVEM0_MSG:     DC.B        'D',0
+MOVEM1_MSG:     DC.B        'A',0
 
 MODE_0_MSG:     DC.B        ' D',0
 MODE_1_MSG:     DC.B        ' A',0
@@ -585,6 +961,8 @@ MODE_A_MSG:     DC.B        ' (A',0
 MODE_A_1_MSG:   DC.B        ')',0
 MODE_A_2_MSG:   DC.B        ')+',0
 MODE_MINUS_MSG: DC.B        ' -(A',0
+
+DIVISOR_MSG:    DC.B        '/',0
 
 SEPERATOR:      DC.B        ',',0
 
@@ -599,6 +977,7 @@ TEMP_MSG:       DC.B        'TMP',0
 
 
 TMP_STR         DS.B        32
+
 
 
 

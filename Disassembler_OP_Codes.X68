@@ -86,7 +86,7 @@ JUMP_1:
 JUMP_2:
 
         JSR         Bits8to6
-        CMP.B       #$1, D1 
+        CMP.B       #$1, D2 
         BEQ         J_MOVEA_L 
         BNE         J_MOVE_L
 
@@ -98,7 +98,7 @@ JUMP_2:
 JUMP_3:
 
         JSR         Bits8to6
-        CMPI.B       #$1, D1 
+        CMPI.B       #$1, D2 
         BEQ         J_MOVEA_W
         BNE         J_MOVE_W
     
@@ -121,7 +121,12 @@ JUMP_4:
         JSR         Bits11to9     ;
         CMP.B       #7, D2
         BEQ         OP_CODE_JSR ;JSR
-        JMP         MOVEM_CHECK ;
+        
+        JSR         Bits9to7
+        CMP.B       #1, D2
+        BEQ         OP_CODE_MOVEM
+
+
         
         
         BRA INVALID_INSTR
@@ -153,11 +158,14 @@ JUMP_6:
         RTS  
 *MOVEQ
 JUMP_7:
-        CLR.L       D2
-        LEA         MOVEQ_MSG, A1
-        MOVE.B      #14, D0
-        TRAP        #15
-        BRA         INVALID_INSTR 
+        ; CLR.L       D2
+        ; LEA         MOVEQ_MSG, A1
+        ; MOVE.B      #14, D0
+        ; TRAP        #15
+        
+        JSR         OP_CODE_MOVEQ
+        
+        ; BRA         INVALID_INSTR 
         RTS
 
 *1000 - DIVU,DIVS   
@@ -213,7 +221,14 @@ JUMP_D:
  
  
 JUMP_E:
-        BRA         ASD_REG
+        CLR.L       D2
+        JSR         Bits7to6
+
+        CMP.B       #3, D2
+        BEQ         OP_CODE_ASD_MEM
+        
+        BRA         OP_CODE_ASD_REG
+        
         RTS  
          
 JUMP_ERROR:       
@@ -339,6 +354,14 @@ Bits11to9:
 *-------------------------
 
 *----ISOLATE INSTRUCTION FIELD-----      
+Bit0:
+        MOVE.W      D4, D2
+        MOVE.B      #15, D0
+        LSL.W       D0, D2     
+        MOVE.B      #15, D0     
+        LSR.W       D0, D2     
+        RTS
+
 Bit5:
         MOVE.W      D4, D2
         MOVE.B      #10, D0
@@ -346,6 +369,14 @@ Bit5:
         MOVE.B      #15, D0     
         LSR.W       D0, D2     
         RTS
+        
+Bit6:
+        MOVE.W      D4, D2
+        MOVE.B      #11, D0
+        LSL.W       D0, D2     
+        MOVE.B      #15, D0     
+        LSR.W       D0, D2     
+        RTS        
 *-------------------------
 
 
@@ -429,6 +460,10 @@ OP_CODE_ORI:
         LEA         ORI_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
+        
+        JSR         OPMODE_ASHIFT
+        
+        JSR         ABS_DATASRC_EA
 
         RTS
 
@@ -468,24 +503,27 @@ OP_CODE_LEA:
 *MOVEM/EXT - 0100
 *-------------------------------------------------------------
 OP_CODE_MOVEM:
-        JSR         Bits9to7 ;check for MOVEM and EXT
-        CMP.B       #1, D2   ;
-        BEQ         MOVEM_OR_EXT
-        JMP         INVALID_INSTR 
+        ;JSR         Bits9to7 ;check for MOVEM and EXT
+        ;CMP.B       #1, D2   ;
+        ;BEQ         MOVEM_OR_EXT
+        ;JMP         INVALID_INSTR 
+        BTST        #6, D2
+        BEQ         MOVEM_W
+        BRA         MOVEM_L
+        
+        
+        RTS
+        
         
 MOVEM_OR_EXT:
         JSR         Bits5to3  ;
         CMP.B       #0, D2    ;
         BEQ         OP_CODE_EXT ;
         
-        MOVE.W      D4, D2
-        BTST        #10, D2
-        BEQ         MOVEM_SIZE
+        ;MOVE.W      D4, D2
+        ;BTST        #10, D2
+        ;BEQ         MOVEM_SIZE
         
-MOVEM_SIZE:
-        BTST        #6, D2
-        BEQ         MOVEM_W
-        JMP         MOVEM_L
         
 MOVEM_W:
         LEA         MOVEM_MSG, A1
@@ -493,8 +531,11 @@ MOVEM_W:
         TRAP        #15
         LEA         WORD_MSG, A1
         MOVE.B      #14, D0
-        TRAP        #15  
-        *EA
+        TRAP        #15
+        
+        MOVE.B      #1, D3
+  
+        JSR         EA_MOVEM
         RTS
         
 MOVEM_L:
@@ -503,8 +544,12 @@ MOVEM_L:
         TRAP        #15
         LEA         LONG_MSG, A1
         MOVE.B      #14, D0
-        TRAP        #15   
-        *EA
+        TRAP        #15 
+        MOVE.B      #2, D3
+  
+        JSR         EA_MOVE
+        
+        
         RTS   
          
 OP_CODE_EXT:
@@ -514,12 +559,12 @@ OP_CODE_EXT:
         RTS
 
 
-MOVEM_CHECK:
-        CLR.L       D2
-        MOVE.L      D4, D2
-        BTST        #11,D2 ;
-        BNE         OP_CODE_MOVEM
-        JMP         INVALID_INSTR               
+;MOVEM_CHECK:
+;        CLR.L       D2
+;        MOVE.L      D4, D2
+;        BTST        #11,D2 ;
+;        BNE         OP_CODE_MOVEM
+;        JMP         INVALID_INSTR               
 
 
 *ADDQ - 0101, BScc, Scc
@@ -528,6 +573,10 @@ OP_CODE_ADDQ:
         LEA         ADDQ_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
+        
+        JSR         OPMODE_ASHIFT
+        
+        JSR         EA_ADDQ
         
         RTS
         
@@ -653,12 +702,17 @@ OP_CODE_BRA:
         MOVE.B      #14, D0
         TRAP        #15
         
+        JSR         EA_BRA
+        
         RTS
 
 OP_CODE_BSR:
         LEA         BSR_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
+        
+        JSR         EA_BRA
+        
         RTS
         
 *MOVEQ - 0111
@@ -667,6 +721,9 @@ OP_CODE_MOVEQ:
         LEA         MOVEQ_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
+        
+        JSR         EA_MOVEQ
+        
         RTS
 
 *MULU - 1100
@@ -710,57 +767,65 @@ OP_CODE_ADDA:
       
 *ASL/ASR - 1110
 *-------------------------------------------------------------
-ASD_REG:
+OP_CODE_ASD_REG:
         CLR.L       D2
         MOVE.W      D4, D2
         BTST        #8, D2
-        BNE         OP_CODE_ASL_REG
-        LEA         ASR_MSG, A1
-        MOVE.B      #14, D0
-        TRAP        #15
-        RTS
-        *EA
-        
-OP_CODE_ASL_REG:
+        BNE         OP_CODE_ASR_REG
         LEA         ASL_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
+        
+        JSR         OPMODE_ASHIFT
+        
+        JSR         EA_AS
+        
         RTS
-        *EA
+
+        
+OP_CODE_ASR_REG:
+        LEA         ASR_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        JSR         OPMODE_ASHIFT
+        
+        JSR         EA_AS
+        
+        RTS
+
         
         
-*REG_SIZE:
-*        CMP.B       #0, D2
-*        BEQ         PRINT_BYTE
-*        CMP.B       #1, D2
-*        BEQ         PRINT_WORD
-*        CMP.B       #2, D2
-*        BEQ         PRINT_LONG
-*        JMP         WRONG_SIZE
 
-MEM_SHIFT:
-        CLR.L       D2
-        JSR         Bits4to3
-        CMP.B       #0, D2
-        BEQ         ASD_MEM
-
-ASD_MEM:
+OP_CODE_ASD_MEM:
         CLR.L       D2
         MOVE.W      D4, D2
         BTST        #8, D2
         BEQ         OP_CODE_ASR_MEM
+       
         LEA         ASL_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
+        
+        LEA         SPACE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         EA_GENERIC
+        
         RTS
-        *EA
       
 OP_CODE_ASR_MEM:
         LEA         ASR_MSG, A1
         MOVE.B      #14, D0
         TRAP        #15
-        *EA
+        
+        LEA         SPACE_MSG, A1
+        MOVE.B      #14, D0
+        TRAP        #15
+        
+        JSR         EA_GENERIC
         RTS
+
         
         
 
@@ -775,9 +840,9 @@ NOP_MSG:        DC.B        'NOP',0
 MOVEM_MSG:      DC.B        'MOVEM',0
 LEA_MSG:        DC.B        'LEA',0
 JSR_MSG:        DC.B        'JSR',0
-BRA_MSG:        DC.B        'BRA  ',0
+BRA_MSG:        DC.B        'BRA',0
 BSR_MSG:        DC.B        'BSR',0
-MOVEQ_MSG:      DC.B        'MOVEQ',0
+MOVEQ_MSG:      DC.B        'MOVEQ ',0
 DIVU_MSG:       DC.B        'DIVU',0
 DIVS_MSG:       DC.B        'DIVS',0
 SUB_MSG:        DC.B        'SUB',0
@@ -802,6 +867,8 @@ ERROR_OP_MSG:   DC.B        'Not A valid OP code',0
 IMPLEMENT_MSG:  DC.B        'OP code not implemented yet',0
 ERROR_INSTR:    DC.B        'INVALID OP-CODE',0
 ERROR_SIZE_MSG: DC.B        'INVALIDE OP-CODE SIZE',0
+
+
 
 
 
