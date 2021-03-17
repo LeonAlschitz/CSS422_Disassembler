@@ -41,7 +41,8 @@ EA_MOVE:
         JSR         MODE_TABLE
         
         RTS
-        
+
+; Generic Effective addressing function that get called by a lot of different op codes        
 EA_GENERIC:
     
         JSR         Bits5to3
@@ -66,6 +67,7 @@ DATASRC_EA:
         
         RTS
         
+        ; #$data, ea
 ABS_DATASRC_EA:
 
         JSR         DATA_TABLE
@@ -82,7 +84,7 @@ ABS_DATASRC_EA:
         RTS        
 
 
-        
+        ; ea, #data
 REVERSESRC_EA:
     
         JSR         EA_GENERIC
@@ -94,6 +96,7 @@ REVERSESRC_EA:
         MOVE.B      D2, D6
         JSR         MODE_TABLE
         RTS        
+        ; effective addresing for add and similair op codes
 EA_ADD:
         JSR         EA_GENERIC
         LEA         SEPERATOR, A1
@@ -142,18 +145,8 @@ EA_DSRC:
         JSR         MODE_TABLE
 
         RTS
-;EA_AS_MEM:
 
-;        JSR         Bits5to3
-;        MOVE.B      D2, D5
-;        JSR         ASD_MEM_MODE_CHECK
-;        MOVE.B      D2, D6
-;        JSR         MODE_TABLE
-
-;        RTS
-
-
-        
+*-----------Effective addressing for Arithmetic shift functions----------
 EA_AS:
 
         JSR         Bit5
@@ -163,6 +156,9 @@ EA_AS:
         BRA         AS_REGISTER
         
         RTS    
+AS_FIX:
+        MOVE.B      #8, D2
+        RTS
         
 AS_COUNT:
         LEA         POUND_MSG, A1
@@ -209,7 +205,7 @@ AS_REGISTER:
         JSR         MODE_TABLE
 
         RTS 
-    
+*---------------Effective addressing for Movem-------------------    
 EA_MOVEM:
         MOVE.L      D4, D2
         BTST        #10,D2 
@@ -384,6 +380,7 @@ MOVEM_MODE3:
         
         BRA         MOVEM_LOOP 
        
+*-----------Effective Addressing for BRA/BSR/etc--------------
        
 EA_BRA:
 
@@ -465,7 +462,7 @@ BRA_LONG:
         MOVE.B      #8, D1
         JSR         CONVERT_HEX
        
-       
+*------------Effective addressing for MoveQ------------------------       
         
 EA_MOVEQ:
 
@@ -498,7 +495,7 @@ EA_MOVEQ:
         JSR         MODE_TABLE
 
         RTS
-
+*------------Effective addressing for AddQ------------------------  
 EA_ADDQ:
 
         MOVE.B      #1, D1
@@ -519,33 +516,6 @@ EA_ADDQ:
         JSR         EA_GENERIC
 
         RTS        
-
-AS_FIX:
-        MOVE.B      #8, D2
-        RTS
-        
-; X+Y = Effective addressing
-; XXX = Mode
-; YYY = Register
-    
-; 0000 0000 00XX XYYY
-EA_LEA:
-        CLR.L       D1
-        CLR.L       D5
-        CLR.L       D6
-
-        MOVE.W      D4, D5
-        MOVE.W      D4, D6
-
-
-        ; Print Out ", "
-        LEA         SEPERATOR, A1
-        MOVE.B      #14, D0
-        TRAP        #15
-
-
-        RTS
-
 
 
 *-----------MODE_TABLE------------------------------------
@@ -977,6 +947,7 @@ TEMP_MSG:       DC.B        'TMP',0
 
 
 TMP_STR         DS.B        32
+
 
 
 

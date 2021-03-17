@@ -23,7 +23,6 @@ JUMP_OP_CODE:
         MOVE.B      #12, D1
         LSR.W       D1, D3  ; D3 = 0000 0000 0000 XXXX
 
-
         CMP.B       #$0, D3
         BEQ         JUMP_0 
         CMP.B       #$1, D3
@@ -46,16 +45,12 @@ JUMP_OP_CODE:
         BEQ         JUMP_9    
         CMP.B       #11, D3
         BEQ         JUMP_B ; 
-        
         CMP.B       #12, D3
         BEQ         JUMP_C ;
-        
         CMP.B       #13, D3
         BEQ         JUMP_D ;
-        
         CMP.B       #14, D3
         BEQ         JUMP_E ;
-
         BRA         JUMP_ERROR
 
 
@@ -935,7 +930,7 @@ OP_CODE_ADDA:
         RTS
         
       
-*ASL/ASR - 1110
+*ASL/ASR/LSL/LSR/ROL/ROR - 1110
 *-------------------------------------------------------------
 
 OP_CODE_ASD_REG:
@@ -1153,6 +1148,7 @@ ERROR_OP_MSG:   DC.B        'Not A valid OP code',0
 IMPLEMENT_MSG:  DC.B        'OP code not implemented yet',0
 ERROR_INSTR:    DC.B        'INVALID OP-CODE',0
 ERROR_SIZE_MSG: DC.B        'INVALIDE OP-CODE SIZE',0
+
 
 
 
